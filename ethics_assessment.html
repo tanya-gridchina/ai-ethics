@@ -1,0 +1,2542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Ethics Assistant</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&display=swap');
+
+:root {
+  --bg: #f8f6f1;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --text-muted: #6b6560;
+  --accent: #c43e2a;
+  --accent-light: #f5e6e3;
+  --border: #e8e2da;
+  --dim-acceptable: #e67e22;
+  --dim-fair: #c43e2a;
+  --dim-robust: #2a7ec4;
+  --dim-safe: #2aad6e;
+  --dim-transparent: #c4a02a;
+  --dim-vendor: #8b2ac4;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2520 100%);
+  color: white;
+  padding: 32px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.app-header::after {
+  content: '';
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 200px;
+  height: 200px;
+  background: var(--accent);
+  border-radius: 50%;
+  opacity: 0.12;
+}
+.app-header h1 {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.app-header p {
+  opacity: 0.7;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+/* Progress bar */
+.progress-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 32px;
+  padding: 0 4px;
+}
+.progress-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: all 0.3s;
+}
+.progress-step.active, .progress-step.completed {
+  opacity: 1;
+}
+.progress-step .bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+.progress-step.active .bar {
+  background: var(--accent);
+}
+.progress-step.completed .bar {
+  background: var(--accent);
+  opacity: 0.5;
+}
+.progress-step .step-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Dimension intro */
+.dimension-intro {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--accent);
+}
+.dimension-intro .dim-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.dimension-intro h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.dimension-intro p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* Question card */
+.question-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  transition: all 0.3s;
+}
+.question-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.question-number {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.question-text {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.sub-question-group {
+  margin-top: 12px;
+}
+.sub-question {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+.sub-question:hover {
+  border-color: #ccc;
+}
+.sub-question-label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+/* Options */
+.options-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.option-btn {
+  padding: 8px 16px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text);
+  position: relative;
+}
+.option-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.option-btn.selected {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+.option-btn .help-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  background: rgba(0,0,0,0.1);
+  border-radius: 50%;
+  font-size: 10px;
+  margin-left: 6px;
+  cursor: help;
+  vertical-align: middle;
+}
+.option-btn.selected .help-icon {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Text input */
+.text-input {
+  width: 100%;
+  min-height: 100px;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  transition: border-color 0.2s;
+  background: var(--bg);
+}
+.text-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Examples badge */
+.examples-section {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #f0ece5;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.examples-section strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Modal / Popup */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal-content {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  transform: translateY(20px);
+  transition: transform 0.25s;
+}
+.modal-overlay.visible .modal-content {
+  transform: translateY(0);
+}
+.modal-content h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+.modal-content p, .modal-content li {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+.modal-content ul {
+  margin: 12px 0;
+  padding-left: 20px;
+}
+.modal-content li {
+  margin-bottom: 6px;
+}
+.modal-close {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 32px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modal-close:hover {
+  opacity: 0.9;
+}
+
+/* Navigation */
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  gap: 12px;
+}
+.nav-btn {
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+.nav-btn:hover {
+  border-color: var(--accent);
+}
+.nav-btn.primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.nav-btn.primary:hover {
+  opacity: 0.9;
+}
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.save-indicator {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Results page */
+.results-section {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+.results-section h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.chart-container {
+  max-width: 500px;
+  margin: 0 auto 32px;
+}
+.score-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+.score-card {
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.score-card .sc-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.score-card .sc-value {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.download-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #1a1a1a, #2d2520);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: opacity 0.2s;
+}
+.download-btn:hover {
+  opacity: 0.9;
+}
+
+.reset-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: var(--accent);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+/* Welcome screen */
+.welcome-screen {
+  text-align: center;
+  padding: 60px 20px;
+}
+.welcome-screen h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+.welcome-screen p {
+  color: var(--text-muted);
+  font-size: 15px;
+  max-width: 600px;
+  margin: 0 auto 32px;
+  line-height: 1.7;
+}
+.welcome-dimensions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 40px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.welcome-dim {
+  padding: 20px 12px;
+  background: var(--surface);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.welcome-dim .wd-icon { font-size: 28px; margin-bottom: 6px; }
+.welcome-dim .wd-name { font-size: 13px; font-weight: 600; }
+
+.start-btn {
+  padding: 16px 48px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,62,42,0.3); }
+
+.resume-notice {
+  margin-top: 16px;
+  padding: 12px 20px;
+  background: #e8f5e9;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #2e7d32;
+}
+
+@media (max-width: 600px) {
+  .app-header { padding: 20px; }
+  .app-header h1 { font-size: 22px; }
+  .container { padding: 16px 12px 60px; }
+  .question-card { padding: 16px; }
+  .score-breakdown { grid-template-columns: 1fr; }
+  .progress-step .step-label { font-size: 8px; }
+  .options-group { flex-direction: column; }
+  .option-btn { width: 100%; text-align: left; }
+}
+</style>
+</head>
+<body>
+<div class="app-header">
+  <h1>AI Ethics Assistant</h1>
+  <p>Evaluate your AI/ML use case across six ethical dimensions</p>
+</div>
+
+<div class="container" id="app"></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-content">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+    <button class="modal-close" onclick="closeModal()">Got it</button>
+  </div>
+</div>
+
+<script>
+// ╔══════════════════════════════════════════════════════════╗
+// ║  ASSESSMENT DATA — EDIT THIS SECTION TO CUSTOMIZE      ║
+// ║  Change questions, scores, guidance, thresholds, etc.   ║
+// ║  Validate your edits at https://jsonlint.com            ║
+// ╚══════════════════════════════════════════════════════════╝
+const DATA = {
+  "meta": {
+    "title": "AI Ethics Assistant",
+    "version": "1.0",
+    "description": "Ethical assessment tool for AI/ML use cases",
+    "subtitle": "Evaluate your AI/ML use case across six ethical dimensions",
+    "welcome_text": "This tool will guide you through an ethical assessment of your AI/ML use case across six key dimensions. Each dimension explores different aspects of responsible AI development."
+  },
+  "dimensions": [
+    {
+      "id": "acceptable_use",
+      "name": "Acceptable Use",
+      "icon": "\u2705",
+      "description": "Acceptable Use refers to what an AI/ML use case can or cannot do based on Scotiabank's ethical principles and risk appetite. In particular, this scoring dimension is used to assess if the use case will make inferences or classifications about sensitive populations, and whether the model will replace human decision makers; either of which involve significant implications that need to be considered closely to limit risk. For example, if a model is leveraging human-out-of-the-loop, they will likely need to have a fall back mechanism in place. We owe it to both our customers and impacted end-users (including our employees) to ensure the use cases being developed are in the end-users' best interest and that the use case's foundations are indeed beneficial to achieving that end without exposing end users to unnecessary risk.",
+      "questions": [
+        {
+          "id": "q1",
+          "text": "Will this use case automate decision making (and execution of that decision) processes while using customer data?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 3,
+              "actionGuidance": "This use case will automate the decision-making and execution processes for a customer and use customer data. It should consider leveraging human-over-the-loop to ensure that there is adequate human oversight to avoid ethics-related issues or use case misbehaviours. In some scenarios, such as back-end automation or predictive maintenance, it is permissible to automate both the decision-making and execution of these decisions and simultaneously have a human-out-of-the-loop. However, in other circumstances, such as scenarios where we are communicating information to our customers, this use case must ensure adequate human oversight at all times. If you are unsure whether your use case requires additional human involvement or oversight, please contact the Data Ethics Office.",
+              "examples": [
+                "A robo-advisor being introduced to provide end-users with financial guidance and services rather than a human financial advisor.",
+                "A chatbot being used to replace the advice of a human at a call center",
+                "A bond pricing model which uses capital markets information and submits bid offer."
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0,
+              "examples": [
+                "The use case sets up triggers for corporate lending customers based on information from salesforce, internal data platforms and external vendors",
+                "An account takeover model which predicts the likelihood of an account being taken over by a fraudster through email money transfer"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q2",
+          "text": "Will this use case make inferences about or specifically apply to equity groups?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 3,
+              "actionGuidance": "This use case will make inferences about or specifically target employment equity groups. Consider that there are additional sensitivities around the use of these attributes, especially when making psychological, behavioral, or societal inferences used for customer targeting (or other predictions). Use case owners should be aware that the specific targeting of equity groups may seriously elevate reputational risk to the Bank given the risk of making inaccurate assumptions about large demographics/groups of people based on model results and used to make business decisions. These attributes should not be used in the context of employment, unless it is to strive to remove barriers to employment for these groups. In certain (limited) scenarios such as AML (e.g., human trafficking) these attributes may be required, however, caution must still be taken. If you are unsure about the appropriateness of use for these attributes, please consult with the Data Ethics Office for further information.",
+              "examples": [
+                "The use case is used for targeted marketing and includes data on customers' ethnicity.",
+                "The use case is used to flag potential sex-trafficking victims that makes inferences on minority groups and ethnicity"
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0,
+              "examples": [
+                "The use case does not use any of the aforementioned attributes"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q3",
+          "text": "What is the degree of human involvement for this use case?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Human-in-the-loop",
+              "score": 0,
+              "actionGuidance": "This use case will leverage human-in-the-loop. Consider that our internal stakeholders may need to be coached on how to appropriately leverage insights from the use case and system. Model developers must think about this presentation as they design and develop the use case to understand how non-technical users may interpret the results of the use case. Also, consider how users will be able to identify when the system starts to behave unexpectedly.",
+              "examples": [
+                "The use case is being used to recognize and process documents included in credit card applications. A human underwriter is flagged if there are any discrepancies in the documents and also makes the final decision."
+              ]
+            },
+            {
+              "label": "Human-over-the-loop",
+              "score": 1,
+              "actionGuidance": "This use case will leverage human-over-the-loop. Consider that our internal stakeholders may need to be coached on how to appropriately leverage insights from the use case and system. Model developers must think about this presentation as they design and develop the use case to understand how non-technical users may interpret the results of the use case. Given this use case is human-over-the-loop, an audit trail mechanism may be required to document human overrides for the use case. Please consult with your Model Owner to determine whether this is required.",
+              "examples": [
+                "The use case is being used as a chatbot to interact with customers. It is fully automated, but in case of a systems failure or other problem a human can intervene and make any necessary changes."
+              ]
+            },
+            {
+              "label": "Human-out-of-the-loop",
+              "score": 2,
+              "actionGuidance": "This use case will leverage human-out-of-the-loop. Model developers should conduct a probability to severity assessment (i.e., assess the probability of harm for the AI system, and assess how severe this harm would be both to the end-users and to Scotiabank as a whole). If the expected severity would be low and the probability of harm is also low, then a human-out-of-the-loop would be permitted. Model developers should also implement fallback mechanisms or \"kill-switches\" where required.",
+              "examples": [
+                "A \"bond pricing model\" which uses capital markets information to decide what bid offer should be made, and submits the bid offer without any human involvement."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fair_impartial",
+      "name": "Fair / Impartial",
+      "icon": "\u2696\ufe0f",
+      "description": "A fair model produces outputs that are not biased. Whenever possible, AI/ML systems that feed into decisions, recommendations or experiences for individual end-users should be assessed to ensure their outputs are fair as they relate to Fairness Attributes (e.g., sex, race, national origin, etc.). Fairness attributes are variables for which the model is likely to exhibit bias, especially if any bias is exhibited in the training data. This dimension also identifies the use of Personally Identifiable Information (PII) or proxies for Fairness Attributes. Fairness is context dependent, and therefore needs to be assessed on a case-by-case basis.",
+      "questions": [
+        {
+          "id": "q1",
+          "text": "What fairness attributes will be available in the development datasets?",
+          "type": "multi_sub",
+          "subQuestions": [
+            {
+              "id": "q1a",
+              "label": "Sex / Gender",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "Yes",
+                  "score": 2,
+                  "actionGuidance": "Given sex / gender will be used for the construction of this model, consider using this information to assess and ensure equality of outcomes across various distributions. Carefully consider whether the use of sex / gender is required to achieve the stated business outcome for this model. Consider that in certain contexts (such as customer segmentation, marketing, Fraud, AML) it may be permissible to include sex / gender for targeting or classification purposes. Model developers must ensure that the underlying data driving the model is representative, and not skewed to a specific distribution."
+                },
+                {
+                  "label": "No",
+                  "score": 0,
+                  "actionGuidance": "Given sex / gender is not available in the dataset, it will not be possible to assess fairness on this dimension. As it will not be possible to assess for fairness, a robust monitoring of output must be conducted to ensure that it does not discriminate against this Fairness Attribute. For example, periodic manual review may be required to ensure that the use case is performing as expected and has not started to discriminate on this Fairness Attribute unknowingly."
+                }
+              ]
+            },
+            {
+              "id": "q1b",
+              "label": "Age",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "Yes",
+                  "score": 2,
+                  "actionGuidance": "Given age will be used for the construction of this model, consider using this information to assess and ensure equality of outcomes across various distributions. Carefully consider whether the use of age is required to achieve the stated business outcome for this model. Consider that in certain contexts (such as customer segmentation, marketing, Fraud, AML) it may be permissible to include age for targeting or classification purposes. Age can also be used to ensure that someone is of legal age to consent to a given product. Model developers must ensure that the underlying data driving the model is representative, and not skewed to a specific distribution."
+                },
+                {
+                  "label": "No",
+                  "score": 0,
+                  "actionGuidance": "Given age is not available in the dataset, it will not be possible to assess fairness on this dimension. As it will not be possible to assess for fairness, a robust monitoring of output must be conducted to ensure that it does not discriminate against this Fairness Attribute. For example, periodic manual review may be required to ensure that the use case is performing as expected and has not started to discriminate on this Fairness Attribute unknowingly."
+                }
+              ]
+            },
+            {
+              "id": "q1c",
+              "label": "Race or Colour",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "Yes",
+                  "score": 5,
+                  "actionGuidance": "Given race or colour will be used for the construction of this model, consider using this information to assess and ensure equality of outcomes across various distributions. Carefully consider whether the use of race or colour is required to achieve the stated business outcome for this model. Consider that in certain contexts (such as Fraud or AML) it may be permissible to include race or colour for targeting or classification purposes. Model developers must ensure that the underlying data driving the model is representative, and not skewed to a specific distribution."
+                },
+                {
+                  "label": "No",
+                  "score": 0,
+                  "actionGuidance": "Given race or colour is not available in the dataset, it will not be possible to assess fairness on this dimension. As it will not be possible to assess for fairness, a robust monitoring of output must be conducted to ensure that it does not discriminate against this Fairness Attribute. For example, periodic manual review may be required to ensure that the use case is performing as expected and has not started to discriminate on this Fairness Attribute unknowingly."
+                }
+              ]
+            },
+            {
+              "id": "q1d",
+              "label": "National or Ethnic Origin",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "Yes",
+                  "score": 5,
+                  "actionGuidance": "Given national or ethnic origin will be used for the construction of this model, consider using this information to assess and ensure equality of outcomes across various distributions. Carefully consider whether the use of national or ethnic origin is required to achieve the stated business outcome for this model. Consider that in certain contexts (such as marketing, Fraud or AML) it may be permissible to include national origin for targeting or classification purposes. Model developers must ensure that the underlying data driving the model is representative, and not skewed to a specific distribution."
+                },
+                {
+                  "label": "No",
+                  "score": 0,
+                  "actionGuidance": "Given national or ethnic origin is not available in the dataset, it will not be possible to assess fairness on this dimension. As it will not be possible to assess for fairness, a robust monitoring of output must be conducted to ensure that it does not discriminate against this Fairness Attribute. For example, periodic manual review may be required to ensure that the use case is performing as expected and has not started to discriminate on this Fairness Attribute unknowingly."
+                }
+              ]
+            },
+            {
+              "id": "q1e",
+              "label": "Marital / Family Status",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "Yes",
+                  "score": 2,
+                  "actionGuidance": "Given marital / family status will be used for the construction of this model, consider using this information to assess and ensure equality of outcomes across various distributions. Carefully consider whether the use of marital / family status is required to achieve the stated business outcome for this model. Consider that in certain contexts (such as Fraud or AML) it may be permissible to include marital / family status for targeting or classification purposes. Model developers must ensure that the underlying data driving the model is representative, and not skewed to a specific distribution."
+                },
+                {
+                  "label": "No",
+                  "score": 0,
+                  "actionGuidance": "Given marital / family status is not available in the dataset, it will not be possible to assess fairness on this dimension. As it will not be possible to assess for fairness, a robust monitoring of output must be conducted to ensure that it does not discriminate against this Fairness Attribute. For example, periodic manual review may be required to ensure that the use case is performing as expected and has not started to discriminate on this Fairness Attribute unknowingly."
+                }
+              ]
+            },
+            {
+              "id": "q1f",
+              "label": "Religion",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "Yes",
+                  "score": 5,
+                  "actionGuidance": "Given religion will be used for the construction of this model, consider using this information to assess and ensure equality of outcomes across various distributions. Carefully consider whether the use of religion is required to achieve the stated business outcome for this model. Consider that in certain contexts (such as Fraud or AML) it may be permissible to include religion for targeting or classification purposes. Model developers must ensure that the underlying data driving the model is representative, and not skewed to a specific distribution."
+                },
+                {
+                  "label": "No",
+                  "score": 0,
+                  "actionGuidance": "Given religion is not available in the dataset, it will not be possible to assess fairness on this dimension. As it will not be possible to assess for fairness, a robust monitoring of output must be conducted to ensure that it does not discriminate against this Fairness Attribute. For example, periodic manual review may be required to ensure that the use case is performing as expected and has not started to discriminate on this Fairness Attribute unknowingly."
+                }
+              ]
+            },
+            {
+              "id": "q1g",
+              "label": "Disability Status or Genetic Characteristics",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "Yes",
+                  "score": 5,
+                  "actionGuidance": "Given disability status or genetic characteristics will be used for the construction of this model, consider using this information to assess and ensure equality of outcomes across various distributions. Carefully consider whether the use of disability status or genetic characteristics is required to achieve the stated business outcome for this model. Consider that in certain contexts (such as Fraud) it may be permissible to include disability status or genetic characteristics for identifying individuals. Model developers must ensure that the underlying data driving the model is representative, and not skewed to a specific distribution."
+                },
+                {
+                  "label": "No",
+                  "score": 0,
+                  "actionGuidance": "Given disability status or genetic characteristics is not available in the dataset, it will not be possible to assess fairness on this dimension. As it will not be possible to assess for fairness, a robust monitoring of output must be conducted to ensure that it does not discriminate against this Fairness Attribute. For example, periodic manual review may be required to ensure that the use case is performing as expected and has not started to discriminate on this Fairness Attribute unknowingly."
+                }
+              ]
+            },
+            {
+              "id": "q1h",
+              "label": "Sexual Orientation",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "Yes",
+                  "score": 5,
+                  "actionGuidance": "Given sexual orientation will be used for the construction of this model, consider using this information to assess and ensure equality of outcomes across various distributions. Carefully consider whether the use of sexual orientation is required to achieve the stated business outcome for this model. Consider that the use of sexual orientation can be very sensitive and should be avoided wherever possible (although there may be legitimate reasons for its use such as Fraud or AML). Developers must ensure that the underlying data driving the model is representative, and not skewed to a specific distribution. Please consult with the Data Ethics Office to understand why this Fairness Attribute is being used."
+                },
+                {
+                  "label": "No",
+                  "score": 0,
+                  "actionGuidance": "Given sexual orientation is not available in the dataset, it will not be possible to assess fairness on this dimension. As it will not be possible to assess for fairness, a robust monitoring of output must be conducted to ensure that it does not discriminate against this Fairness Attribute. For example, periodic manual review may be required to ensure that the use case is performing as expected and has not started to discriminate on this Fairness Attribute unknowingly."
+                }
+              ]
+            },
+            {
+              "id": "q1i",
+              "label": "Conviction for which a pardon has been granted",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "Yes",
+                  "score": 5,
+                  "actionGuidance": "Given conviction for which a pardon has been granted will be used for the construction of this model, consider using this information to assess and ensure equality of outcomes across various distributions. Carefully consider whether the use of this attribute is required to achieve the stated business outcome for this model. Consider that the use of conviction for which a pardon has been granted can be very sensitive and should be avoided wherever possible (although there may be legitimate reasons for its use such as Fraud or AML). Developers must ensure that the underlying data driving the model is representative, and not skewed to a specific distribution."
+                },
+                {
+                  "label": "No",
+                  "score": 0,
+                  "actionGuidance": "Given conviction for which a pardon has been granted is not available in the dataset, it will not be possible to assess fairness on this dimension. As it will not be possible to assess for fairness, a robust monitoring of output must be conducted to ensure that it does not discriminate against this Fairness Attribute. For example, periodic manual review may be required to ensure that the use case is performing as expected and has not started to discriminate on this Fairness Attribute unknowingly."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q2",
+          "text": "Please select the action you will be taking for each Fairness Attribute for the purpose of assessing/adjusting fairness of model/system outputs:",
+          "type": "multi_sub",
+          "conditionalOn": "q1",
+          "subQuestions": [
+            {
+              "id": "q2a",
+              "label": "Sex / Gender",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "No Assessment",
+                  "score": 0,
+                  "actionGuidance": "Given the model development team will leverage \"No Assessment\" for the Fairness Attribute: Sex / Gender, the team must be aware of the bias risks within the model testing and development datasets. Model development teams should consider leveraging techniques such as qualitative or quantitative assessments to lower fairness-related impact."
+                },
+                {
+                  "label": "Qualitative Assessment",
+                  "score": -1,
+                  "actionGuidance": "Given the model development team will pursue a qualitative assessment for the Fairness Attribute: Sex / Gender, the team should consider answering some of the following questions through a series of conversations within their model development team (include the use case owners, sponsors, etc.) and engaging the DEO.",
+                  "examples": [
+                    "Does the model development team understand fairness in the context of the use case?",
+                    "How is the data used in the model collected?",
+                    "Does the data have Personal Identification Information (PII)?",
+                    "Has the team understood the potential sources of bias in this data?",
+                    "What does fairness for using this attribute look like?",
+                    "How will this impact stakeholders?",
+                    "How has the data for the model been collected on this attribute?"
+                  ]
+                },
+                {
+                  "label": "Quantitative Assessment",
+                  "score": -1.5,
+                  "actionGuidance": "Given the model development team will pursue a quantitative assessment for the Fairness Attribute: Sex / Gender, the team should consider answering some of the following questions through a series of mathematical or statistical tests (typically while testing / validating the model).",
+                  "examples": [
+                    "For this fairness attribute, does the model perform consistently, as expected across all sub-groups?",
+                    "Do we have enough data to measure bias for this Fairness Attribute?",
+                    "Would we be able to achieve the same outcome for this use case by removing the Fairness Attribute?",
+                    "Has the team evaluated the fairness measures applicable to the use case?",
+                    "Does the model perform consistently across all groups?",
+                    "For each protected class, what is the probability of receiving favorable predictions from the model?",
+                    "Is the model making decisions aligned with expectations?"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "q2b",
+              "label": "Age",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "No Assessment",
+                  "score": 0,
+                  "actionGuidance": "Given the model development team will leverage \"No Assessment\" for the Fairness Attribute: Age, the team must be aware of the bias risks within the model testing and development datasets. Model development teams should consider leveraging techniques such as qualitative or quantitative assessments to lower fairness-related impact."
+                },
+                {
+                  "label": "Qualitative Assessment",
+                  "score": -1,
+                  "actionGuidance": "Given the model development team will pursue a qualitative assessment for the Fairness Attribute: Age, the team should consider answering some of the following questions through a series of conversations within their model development team.",
+                  "examples": [
+                    "Does the model development team understand fairness in the context of the use case?",
+                    "How is the data used in the model collected?",
+                    "Does the data have PII?",
+                    "Has the team understood the potential sources of bias in this data?",
+                    "What does fairness for using this attribute look like?",
+                    "How will this impact stakeholders?",
+                    "How has the data been collected on this attribute?"
+                  ]
+                },
+                {
+                  "label": "Quantitative Assessment",
+                  "score": -1.5,
+                  "actionGuidance": "Given the model development team will pursue a quantitative assessment for the Fairness Attribute: Age, the team should consider answering some of the following questions through a series of mathematical or statistical tests.",
+                  "examples": [
+                    "For this fairness attribute, does the model perform consistently across all sub-groups (e.g., age ranges of 18-24, 25-34, 35-44, etc.)?",
+                    "Do we have enough data to measure bias?",
+                    "Would we be able to achieve the same outcome by removing the Fairness Attribute?",
+                    "Has the team evaluated the fairness measures applicable to the use case?",
+                    "Does the model perform consistently across all groups?"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "q2c",
+              "label": "Race or Colour",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "No Assessment",
+                  "score": 0,
+                  "actionGuidance": "Given the model development team will leverage \"No Assessment\" for the Fairness Attribute: Race or Colour, the team must be aware of the bias risks within the model testing and development datasets. Model development teams should consider leveraging techniques such as qualitative or quantitative assessments to lower fairness-related impact."
+                },
+                {
+                  "label": "Qualitative Assessment",
+                  "score": -2,
+                  "actionGuidance": "Given the model development team will pursue a qualitative assessment for the Fairness Attribute: Race or Colour, the team should consider answering some of the following questions through a series of conversations within their model development team.",
+                  "examples": [
+                    "Does the model development team understand fairness in the context of the use case?",
+                    "How is the data used in the model collected?",
+                    "Does the data have PII?",
+                    "Has the team understood the potential sources of bias?",
+                    "What does fairness for using this attribute look like?",
+                    "How will this impact stakeholders?",
+                    "How has the data been collected on this attribute?"
+                  ]
+                },
+                {
+                  "label": "Quantitative Assessment",
+                  "score": -4,
+                  "actionGuidance": "Given the model development team will pursue a quantitative assessment for the Fairness Attribute: Race or Colour, the team should consider answering some of the following questions through a series of mathematical or statistical tests.",
+                  "examples": [
+                    "For this fairness attribute, does the model perform consistently across all sub-groups?",
+                    "Do we have enough data to measure bias?",
+                    "Would we be able to achieve the same outcome by removing the Fairness Attribute?",
+                    "Has the team evaluated the fairness measures applicable?",
+                    "Does the model perform consistently across all groups?"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "q2d",
+              "label": "National or Ethnic Origin",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "No Assessment",
+                  "score": 0,
+                  "actionGuidance": "Given the model development team will leverage \"No Assessment\" for the Fairness Attribute: National or Ethnic Origin, the team must be aware of the bias risks within the model testing and development datasets."
+                },
+                {
+                  "label": "Qualitative Assessment",
+                  "score": -2,
+                  "actionGuidance": "Given the model development team will pursue a qualitative assessment for the Fairness Attribute: National or Ethnic Origin, the team should consider answering some of the following questions through conversations within their model development team.",
+                  "examples": [
+                    "Does the team understand fairness in the context of the use case?",
+                    "How is the data collected?",
+                    "Does the data have PII?",
+                    "Has the team understood potential sources of bias?",
+                    "What does fairness look like for this attribute?",
+                    "How will this impact stakeholders?"
+                  ]
+                },
+                {
+                  "label": "Quantitative Assessment",
+                  "score": -4,
+                  "actionGuidance": "Given the model development team will pursue a quantitative assessment for the Fairness Attribute: National or Ethnic Origin, the team should consider answering some of the following questions through mathematical or statistical tests.",
+                  "examples": [
+                    "Does the model perform consistently across all sub-groups?",
+                    "Do we have enough data to measure bias?",
+                    "Would we achieve the same outcome by removing the attribute?",
+                    "Has the team evaluated applicable fairness measures?"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "q2e",
+              "label": "Marital / Family Status",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "No Assessment",
+                  "score": 0,
+                  "actionGuidance": "Given the model development team will leverage \"No Assessment\" for the Fairness Attribute: Marital / Family Status, the team must be aware of the bias risks within the model testing and development datasets."
+                },
+                {
+                  "label": "Qualitative Assessment",
+                  "score": -1,
+                  "actionGuidance": "Given the model development team will pursue a qualitative assessment for the Fairness Attribute: Marital / Family Status, the team should consider answering some of the following questions through conversations within their model development team.",
+                  "examples": [
+                    "Does the team understand fairness in the context of the use case?",
+                    "How is the data collected?",
+                    "Does the data have PII?",
+                    "What does fairness look like for this attribute?"
+                  ]
+                },
+                {
+                  "label": "Quantitative Assessment",
+                  "score": -1.5,
+                  "actionGuidance": "Given the model development team will pursue a quantitative assessment for the Fairness Attribute: Marital / Family Status, the team should consider answering some of the following questions through mathematical or statistical tests.",
+                  "examples": [
+                    "Does the model perform consistently across all sub-groups?",
+                    "Do we have enough data to measure bias?",
+                    "Would we achieve the same outcome by removing the attribute?"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "q2f",
+              "label": "Religion",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "No Assessment",
+                  "score": 0,
+                  "actionGuidance": "Given the model development team will leverage \"No Assessment\" for the Fairness Attribute: Religion, the team must be aware of the bias risks within the model testing and development datasets."
+                },
+                {
+                  "label": "Qualitative Assessment",
+                  "score": -2,
+                  "actionGuidance": "Given the model development team will pursue a qualitative assessment for the Fairness Attribute: Religion, the team should consider answering some of the following questions through conversations within their model development team.",
+                  "examples": [
+                    "Does the team understand fairness in the context of the use case?",
+                    "How is the data collected?",
+                    "Does the data have PII?",
+                    "What does fairness look like for this attribute?"
+                  ]
+                },
+                {
+                  "label": "Quantitative Assessment",
+                  "score": -4,
+                  "actionGuidance": "Given the model development team will pursue a quantitative assessment for the Fairness Attribute: Religion, the team should consider answering some of the following questions through mathematical or statistical tests.",
+                  "examples": [
+                    "Does the model perform consistently across all sub-groups?",
+                    "Do we have enough data to measure bias?",
+                    "Would we achieve the same outcome by removing the attribute?"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "q2g",
+              "label": "Disability Status or Genetic Characteristics",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "No Assessment",
+                  "score": 0,
+                  "actionGuidance": "Given the model development team will leverage \"No Assessment\" for the Fairness Attribute: Disability Status or Genetic Characteristics, the team must be aware of the bias risks."
+                },
+                {
+                  "label": "Qualitative Assessment",
+                  "score": -2,
+                  "actionGuidance": "Given the model development team will pursue a qualitative assessment for the Fairness Attribute: Disability Status or Genetic Characteristics, the team should consider answering questions through conversations within their model development team.",
+                  "examples": [
+                    "Does the team understand fairness in the context of the use case?",
+                    "How is the data collected?",
+                    "Does the data have PII?",
+                    "What does fairness look like for this attribute?"
+                  ]
+                },
+                {
+                  "label": "Quantitative Assessment",
+                  "score": -4,
+                  "actionGuidance": "Given the model development team will pursue a quantitative assessment for the Fairness Attribute: Disability Status or Genetic Characteristics, the team should consider mathematical or statistical tests.",
+                  "examples": [
+                    "Does the model perform consistently across all sub-groups?",
+                    "Do we have enough data to measure bias?",
+                    "Would we achieve the same outcome by removing the attribute?"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "q2h",
+              "label": "Sexual Orientation",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "No Assessment",
+                  "score": 0,
+                  "actionGuidance": "Given the model development team will leverage \"No Assessment\" for the Fairness Attribute: Sexual Orientation, the team must be aware of the bias risks."
+                },
+                {
+                  "label": "Qualitative Assessment",
+                  "score": -2,
+                  "actionGuidance": "Given the model development team will pursue a qualitative assessment for the Fairness Attribute: Sexual Orientation, the team should consider answering questions through conversations within their model development team.",
+                  "examples": [
+                    "Does the team understand fairness in the context of the use case?",
+                    "How is the data collected?",
+                    "Does the data have PII?",
+                    "What does fairness look like for this attribute?"
+                  ]
+                },
+                {
+                  "label": "Quantitative Assessment",
+                  "score": -4,
+                  "actionGuidance": "Given the model development team will pursue a quantitative assessment for the Fairness Attribute: Sexual Orientation, the team should consider mathematical or statistical tests.",
+                  "examples": [
+                    "Does the model perform consistently across all sub-groups?",
+                    "Do we have enough data to measure bias?"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "q2i",
+              "label": "Conviction for which a pardon has been granted",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "No Assessment",
+                  "score": 0,
+                  "actionGuidance": "Given the model development team will leverage \"No Assessment\" for the Fairness Attribute: Conviction for which a pardon has been granted, the team must be aware of the bias risks."
+                },
+                {
+                  "label": "Qualitative Assessment",
+                  "score": -2,
+                  "actionGuidance": "Given the model development team will pursue a qualitative assessment for the Fairness Attribute: Conviction for which a pardon has been granted, the team should consider answering questions through conversations within their model development team.",
+                  "examples": [
+                    "Does the team understand fairness in the context of the use case?",
+                    "How is the data collected?",
+                    "Does the data have PII?"
+                  ]
+                },
+                {
+                  "label": "Quantitative Assessment",
+                  "score": -4,
+                  "actionGuidance": "Given the model development team will pursue a quantitative assessment for the Fairness Attribute: Conviction for which a pardon has been granted, the team should consider mathematical or statistical tests.",
+                  "examples": [
+                    "Does the model perform consistently across all sub-groups?",
+                    "Do we have enough data to measure bias?"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q3",
+          "text": "Describe how the Fairness Attribute(s) you've selected for this use case will be used to achieve the stated business outcome. Describe specifically how they will contribute to the overall decision / recommendation / experience for the customer and why they have been included in this use case.",
+          "type": "text",
+          "score": null,
+          "examples": [
+            "The use case is an AML model which can help the bank in reducing costs as well as the risk the bank is exposed to. This use case will use a customers' country of origin as a risk factor, which has a strong correlation with the predicted outcome. It will be included in the calculation of a risk-rating score in combination with other data points, but will ultimately be reviewed by a human agent prior to a decision being made."
+          ]
+        },
+        {
+          "id": "q4",
+          "text": "Will this use case use personally identifiable information (PII)?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 1,
+              "actionGuidance": "As this use case is leveraging PII, consider that Regulators and the public are closely scrutinizing the use of customer data, and specifically personally identifiable information as it relates to consumer privacy legislation, data protection, consent for use, and other related topics. A PIA should be conducted in this circumstance. Where possible it is appropriate to de-identify, aggregate, or anonymize information such that it does not identify an individual prior to its use/analysis. Please contact the Enterprise Privacy Office for further information.",
+              "examples": [
+                "Credit card number",
+                "Address",
+                "Account number",
+                "Country",
+                "Postal code",
+                "Date of birth",
+                "Driver's license number",
+                "Passport number"
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0
+            }
+          ]
+        },
+        {
+          "id": "q5",
+          "text": "Will this use case use proxies of Fairness Attributes?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 2,
+              "actionGuidance": "Leveraging proxies of Fairness Attributes can result in the outputs being skewed towards a certain race, gender, age, religion, etc. The inclusion of proxies such as postal code, language preferences, education, and more can be permitted in certain contexts. The use of proxies for Fairness Attributes for regulated models as credit adjudication may result in severe reputational risks for our organization and should be removed wherever possible or appropriate. Where possible, also employ masking techniques such as tokenization to prevent ethics-related harm in the event of data breaches.",
+              "examples": [
+                "Postal Code, Socioeconomic Status, etc. may be proxies for Race or Colour.",
+                "Years Since Graduation is a common proxy for Age.",
+                "Language Preference is a common proxy for National Origin."
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0,
+              "actionGuidance": "Even though this use case will not include proxies for Fairness Attributes, consider conducting some form of proxy analysis on the underlying datasets to ensure that sensitive data elements which could serve as proxies for Fairness Attributes have not found their way into the model dataset."
+            }
+          ]
+        },
+        {
+          "id": "q6",
+          "text": "If so, will the use case team take an action to address the use of these proxies?",
+          "type": "single_choice",
+          "conditionalOn": "q5_yes",
+          "options": [
+            {
+              "label": "Yes",
+              "score": -2,
+              "examples": [
+                "Some models may use \"year since graduation\" as a proxy for the fairness attribute \"age\", when required. The use case team can implement a correlation matrix for feature selection and weight adjustment (or complete remove) the proxy in the model to make the model less likely to be biased."
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0,
+              "actionGuidance": "This use case is not addressing the use of proxies for Fairness Attributes, but this should only be done for certain limited contexts or for certain internal-facing use cases only. Consider that most regulated models must not leverage Fairness Attributes in their decision-making process (e.g., Credit Adjudication). For more information, please contact the Data Ethics Office."
+            },
+            {
+              "label": "Not Applicable",
+              "score": -1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "robust_reliable",
+      "name": "Robust / Reliable",
+      "icon": "\ud83d\udd27",
+      "description": "Robustness refers to reliable and secure ML models. While there is a model validation process in place to ensure robustness/reliability, this dimension focuses on the actions taken to ensure fairness/transparency across the development process. These decisions and actions need to be maintained in model deployment and re-visited to ensure their effectiveness. The questions in this dimension are used to determine the requirements for ongoing monitoring for the use case and the degree to which these are done using automatic triggers or manually.",
+      "questions": [
+        {
+          "id": "q1",
+          "text": "Will automated machine learning software be leveraged to develop this use case?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 3,
+              "actionGuidance": "As this use case leverages AutoML, model developers should undergo additional activities (and involve experienced data scientists) to challenge and validate the use case developed via the AutoML software. For example, model developers should seek to fully understand (as much as possible) the way in which the use case is making decisions to understand its fairness and transparency-related limitations (i.e., stress-testing). AutoML should only be used for low-impact use cases (e.g., rules-based RPA, expense management, operational processing, predictive maintenance, and more) due to its limited transparency and potential for fairness-related issues.",
+              "examples": [
+                "Google AutoML",
+                "Azure Machine Learning",
+                "Auto-Keras"
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0
+            }
+          ]
+        },
+        {
+          "id": "q2",
+          "text": "Will the system be monitored using automated triggers or at a set frequency?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Automatic Trigger",
+              "score": 0,
+              "examples": [
+                "Refers to pre-defined performance thresholds (e.g., false positive or false negative rate exceeding a certain percentage) which would trigger the requirement for the model to be retrained."
+              ]
+            },
+            {
+              "label": "Set Frequency",
+              "score": 2,
+              "actionGuidance": "As this use case will be reviewed on a set frequency, consider adding additional automatic triggers that will require attention from the model maintainers given that model performance can deviate significantly in a short period of time. As such, it is possible for a model to perform inaccurately or inconsistently for many months before a set frequency review finds the issue. For example, consider tracking the models confusion matrix (false positives, false negatives, etc.) to determine when a re-training should be triggered, as opposed to waiting to revisit the model on a annual or semi-annual basis.",
+              "examples": [
+                "Refers to a period (e.g., semi-annually) to review and re-train the model."
+              ]
+            },
+            {
+              "label": "Both",
+              "score": 0
+            },
+            {
+              "label": "No",
+              "score": 5,
+              "actionGuidance": "As this use case will be reviewed with unknown frequency, consider that these decisions must be made prior to models being deployed into production. Model developers should consult with the Model Owners to understand the stated business objectives of the model, and determine the frequency with which this use case will require review (and whether they be automatically triggered via performance metrics or reviewed on a timed interval). These decisions must be understood and documented to avoid ethics-related risks due to model performance deviation over time."
+            }
+          ]
+        },
+        {
+          "id": "q3",
+          "text": "Please describe the criteria threshold after which the use case will require review.",
+          "type": "text",
+          "score": null,
+          "examples": [
+            "If there is a specific threshold of false positives/false negatives that would trigger the re-training or redevelopment of the use case."
+          ]
+        },
+        {
+          "id": "q4",
+          "text": "Will this use case interpret unstructured data (e.g. audio, text)?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 2,
+              "actionGuidance": "As this use case is leveraging unstructured data, special attention must be given to the underlying quality and representativeness. The use of unstructured data also requires labelling in most circumstances. Model developers must clearly define which data elements should be labeled and how to ensure the labels are applied consistently and to avoid issues with performance / robustness of the model.",
+              "examples": [
+                "The use case analyzes social media posts to help identify potential fraudsters.",
+                "The use case analyzes customer comments to identify areas where Scotiabank can improve our products and services."
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "safe_secure",
+      "name": "Safe / Secure",
+      "icon": "\ud83d\udd12",
+      "description": "Data is safe and secure when it is not at risk of being misused. While Safety and Security are the primary responsibility of Information Security and IT teams, it is also a very important pillar of ethical data use. The questions in this dimension are used to act as an extra security check and proactively identify and address external physical and digital risks posed to the Bank and its data. This is not meant to replace assessments conducted by the IS&C team, rather, the questions are meant to trigger the right involvement from enterprise stakeholders.",
+      "questions": [
+        {
+          "id": "q1",
+          "text": "Can the use case learn in an autonomous way (i.e. without human input)?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 5,
+              "actionGuidance": "As this use case is leveraging autonomous learning, model developers must be aware that external threat actors may wish to reverse-engineering or manipulate an algorithm with malicious intent. Model developers must carefully consider whether using autonomous learning is necessary to achieve the stated business value and outcome. In addition, there must be a mechanism in place for periodic manual review and intervention (refer to the Robust/Reliable questions and guidance). Autonomous learning should only be used in low severity, low probability of harm use cases. Customer-facing applications should be limited as much as possible. For further information, please consult with Scotiabank's Cyber/Security team and the Data Ethics Office.",
+              "examples": [
+                "Chatbots",
+                "Smart assistants",
+                "Bond pricing model"
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0
+            }
+          ]
+        },
+        {
+          "id": "q2",
+          "text": "Because this use case will learn in an autonomous way, are there mechanisms in place to ensure that it is not being re-trained using inputs that are uncharacteristic to the standard profile of expected inputs?",
+          "type": "single_choice",
+          "conditionalOn": "q1_yes",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 0
+            },
+            {
+              "label": "No",
+              "score": 3,
+              "actionGuidance": "As this use case will not have mechanisms in place to ensure that the use case is not being re-trained on inputs that are uncharacteristic to the standard profile of expected inputs, consider that it is possible for malicious actors to train this use case using inappropriate or inaccurate inputs, which will result in inaccurate assumptions or decisions. Consider incorporating a higher degree of human involvement if possible (e.g., human over the loop) to adjust the use case if it misbehaves and analyze the inputs that the use case is being trained on to avoid flawed re-training. Consider using reinforcement learning (i.e., outline areas that are off-limits for the use case) if possible.",
+              "examples": [
+                "Data source review for bias before starting the re-training process",
+                "Engage a higher degree of human involvement"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q3",
+          "text": "Will external users be able to reverse-engineer the use case by sending repeated or false input?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 8,
+              "actionGuidance": "As there is a risk of reverse-engineering the use case by having an external threat actor sending repeated or false input, consider mechanisms to limit the inputs of end-users (e.g., cooldown periods) and consult with Scotiabank's Cyber/Security team to identify potential mitigation approaches to avoid the reverse-engineering of the use case.",
+              "examples": [
+                "The use case is a credit application that is customer-facing. It is thus at risk to be attacked by repeated input to reverse engineer our Bank's credit lending algorithms (or other algorithms overall)."
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transparent_explainable",
+      "name": "Transparent / Explainable",
+      "icon": "\ud83d\udd0d",
+      "description": "Explainability and transparency refer to a set of methods and processes that enable human users to comprehend and trust the results and output created by machine learning algorithms. The questions in this dimension encourage such explainability by assessing the required degree of transparency as per bank policies and regulation for particular end-users (i.e., internal and external stakeholders, customers) depending on the selected AI/ML techniques for the given use case (i.e., are these techniques compatible with transparency requirements?).",
+      "questions": [
+        {
+          "id": "q1",
+          "text": "What AI/ML techniques are being considered for this use case?",
+          "type": "multi_choice",
+          "options": [
+            {
+              "label": "Simulation Models",
+              "score": 1,
+              "actionGuidance": "When using simulation techniques, model developers should consider the explainability benefits associated with keeping the number of variables as low as possible, and favour variables that are intuitive and understandable for end-users in order to limit the complexity of the model where possible.",
+              "examples": [
+                "Monte-Carlo",
+                "Discrete Event Simulation",
+                "Queuing Series Simulation",
+                "System Dynamics simulation"
+              ]
+            },
+            {
+              "label": "Ensemble Decision Trees",
+              "score": 3,
+              "actionGuidance": "When using Ensemble Decision Trees, model developers should consider the benefits of limiting the depth of the tree and using pruning. Consider that because this is a less-explainable technique, there may be potential issues related to bias, fairness, and transparency. Consider limiting the complexity where possible and using tools to gain local explainability (e.g., SHAP, LIME).",
+              "examples": [
+                "Random Forest",
+                "XGBoost",
+                "Boosting",
+                "Bagging",
+                "Stacking"
+              ]
+            },
+            {
+              "label": "Time Dependent Models",
+              "score": 0,
+              "actionGuidance": "When using time-dependent modelling techniques, model developers should consider the benefits of limiting the time window for the model to reduce complexity where possible.",
+              "examples": [
+                "ARIMA",
+                "Time Series Forecasting"
+              ]
+            },
+            {
+              "label": "Deep Learning Models",
+              "score": 5,
+              "actionGuidance": "When using deep learning models, model developers must consider issues related to bias, fairness, and transparency as they are using a less-explainable technique. Use a limited number of variables where possible and favour variables that are intuitive and understandable for end-users in order to limit the complexity of the model where possible. Consider using supplemental tools to gain local explainability (e.g., SHAP, LIME).",
+              "examples": [
+                "Deep Artificial Neural Networks",
+                "Convolutional neural networks (CNN)",
+                "Recurrent Neural Networks (RNN)"
+              ]
+            },
+            {
+              "label": "Traditional Statistical Techniques",
+              "score": 0,
+              "actionGuidance": "When using traditional statistical techniques, model developers should still consider issues related to bias, fairness, and transparency despite using a more explainable technique. Consider using a limited number of variables where possible, and favour variables that are intuitive and understandable for end-users in order to limit the complexity of the model where possible.",
+              "examples": [
+                "Linear Regression",
+                "Standard deviation",
+                "Mean",
+                "Median",
+                "Hypothesis testing"
+              ]
+            },
+            {
+              "label": "Other",
+              "score": 1
+            }
+          ]
+        },
+        {
+          "id": "q2",
+          "text": "If 'Other' is selected above, what other types of techniques are being considered for this use case? Else, please enter 'n/a' or 'Not Applicable'.",
+          "type": "text",
+          "score": null
+        },
+        {
+          "id": "q3",
+          "text": "Will the deployment of this use case change the way our organization interacts with or notifies regulators or customers?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 2,
+              "actionGuidance": "As this use case will materially change the way we interact with regulators or our customers, please contact the Enterprise Privacy Office and the Data Ethics Office to determine whether updates are required to our disclaimers, terms and conditions, and other communications to our customers as a result of this change or modification.",
+              "examples": [
+                "The use case is meant to deliver automatic notifications to end-users where this used to be completed manually in the past. For example, a business owner identification model which uses purchase patterns to identify whether the account is used by the business owner. If the account is flagged, an automatic notification is sent to the account owner."
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0
+            }
+          ]
+        },
+        {
+          "id": "q4",
+          "text": "Please select the degree of transparency for each stakeholder group:",
+          "type": "multi_sub",
+          "subQuestions": [
+            {
+              "id": "q4a",
+              "label": "Internal Stakeholders",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "1 (Lowest)",
+                  "score": 4,
+                  "actionGuidance": "As the lowest degree of transparency has been selected, consider that selecting higher degrees of transparency will help our internal stakeholders understand our use case more effectively. This low level of transparency should only be selected for internal-facing use cases (e.g., predictive maintenance, automation, etc.) or for low impact customer-facing use cases (e.g., next-best action), or for when there is a high degree of human oversight and involvement (e.g., human-in-the-loop). In most scenarios, for regulated customer-facing models (e.g., credit adjudication) Degree 5 is required."
+                },
+                {
+                  "label": "2",
+                  "score": 3,
+                  "actionGuidance": "As a low degree of transparency has been selected, consider that selecting higher degrees of transparency will help our internal stakeholders understand our use case more effectively."
+                },
+                {
+                  "label": "3",
+                  "score": 2,
+                  "actionGuidance": "As a medium degree of transparency has been selected, consider that selecting higher degrees of transparency will help our internal stakeholders understand our use case more effectively. This moderate level of transparency should be considered the \"floor\" for medium impact customer-facing use cases (e.g., talent acquisition, chatbots, customer segmentation) or for when there is a limited amount of human involvement (e.g., human-over-the-loop). In most scenarios, for regulated customer-facing models (e.g., credit adjudication) Degree 5 is required."
+                },
+                {
+                  "label": "4",
+                  "score": 1,
+                  "actionGuidance": "While a relatively high degree of transparency has been chosen, consider that selecting the highest degree of transparency (5) will help our internal stakeholders interact with this use case more effectively. This relatively high level of transparency should be considered the \"floor\" for high impact customer-facing use cases (e.g., talent acquisition) or for when there is a limited amount of human involvement (e.g., human-over-the-loop). In most scenarios, for regulated customer-facing models (e.g., credit adjudication) Degree 5 is required."
+                },
+                {
+                  "label": "5 (Highest)",
+                  "score": 0
+                },
+                {
+                  "label": "Not Applicable",
+                  "score": 0
+                }
+              ]
+            },
+            {
+              "id": "q4b",
+              "label": "External Stakeholders",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "1 (Lowest)",
+                  "score": 4,
+                  "actionGuidance": "As the lowest degree of transparency has been selected, consider that selecting higher degrees of transparency will help our external stakeholders understand our use case more effectively. This low level of transparency should only be selected for internal-facing use cases or for low impact customer-facing use cases, or for when there is a high degree of human oversight and involvement."
+                },
+                {
+                  "label": "2",
+                  "score": 3,
+                  "actionGuidance": "As a low degree of transparency has been selected, consider that selecting higher degrees of transparency will help our external stakeholders understand our use case more effectively."
+                },
+                {
+                  "label": "3",
+                  "score": 2,
+                  "actionGuidance": "As a medium degree of transparency has been selected, consider that selecting higher degrees of transparency will help our external stakeholders understand our use case more effectively."
+                },
+                {
+                  "label": "4",
+                  "score": 1,
+                  "actionGuidance": "While a relatively high degree of transparency has been chosen, consider that selecting the highest degree of transparency (5) will help our external stakeholders interact with this use case more effectively."
+                },
+                {
+                  "label": "5 (Highest)",
+                  "score": 0
+                },
+                {
+                  "label": "Not Applicable",
+                  "score": 0
+                }
+              ]
+            },
+            {
+              "id": "q4c",
+              "label": "Customers",
+              "type": "single_choice",
+              "options": [
+                {
+                  "label": "1 (Lowest)",
+                  "score": 4,
+                  "actionGuidance": "As the lowest degree of transparency has been selected, consider that selecting higher degrees of transparency will help our customers understand our use case more effectively. This low level of transparency should only be selected for internal-facing use cases or for low impact customer-facing use cases, or for when there is a high degree of human oversight."
+                },
+                {
+                  "label": "2",
+                  "score": 3,
+                  "actionGuidance": "As a low degree of transparency has been selected, consider that selecting higher degrees of transparency will help our customers understand our use case more effectively."
+                },
+                {
+                  "label": "3",
+                  "score": 2,
+                  "actionGuidance": "As a medium degree of transparency has been selected, consider that selecting higher degrees of transparency will help our customers understand our use case more effectively."
+                },
+                {
+                  "label": "4",
+                  "score": 1,
+                  "actionGuidance": "While a relatively high degree of transparency has been chosen, consider that selecting the highest degree (5) will help our customers interact with this use case more effectively."
+                },
+                {
+                  "label": "5 (Highest)",
+                  "score": 0
+                },
+                {
+                  "label": "Not Applicable",
+                  "score": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q5",
+          "text": "Are there any expectations for which a more explainable technique is required than what is being considered?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 3,
+              "actionGuidance": "Since customers or employees would benefit from added explanations or more transparency, model developers must be aware that there is a low tolerance for using less explainable techniques or not supplementing the model with local explainability techniques such as LIME or SHAP. Model developers must consider the fact that a customer/employee may expect or benefit from an explanation as you are designing or developing the use case (i.e., this will affect the techniques and algorithms you apply).",
+              "examples": [
+                "In instances where you are expected to communicate details of a decision to an end-customer, model developers should favour techniques such as linear regressions, simple decision trees, etc. as opposed to more complex techniques like Neural Networks, XGBoost, etc.",
+                "A Credit Adjudication model requires Degree 5 transparency to inform the customer of how the use case arrived at its outcome for them specifically so highly explainable models are expected."
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0
+            },
+            {
+              "label": "Not Applicable",
+              "score": 0
+            }
+          ]
+        },
+        {
+          "id": "q6",
+          "text": "Will this use case explore supplemental local explainability techniques such as LIME / SHAP?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 0,
+              "actionGuidance": "As this use case will leverage LIME / SHAP, model developers must be aware that these techniques are \"surrogate models\" and do not fully explain the workings of a given AI/ML technique and are therefore not substitutes for leveraging a more inherently explainable technique.",
+              "examples": [
+                "To add more explainability to the model like a DNN we can use LIME/SHAP. It will not provide complete explainability, but it makes a black-box case model like a DNN model more explainable."
+              ]
+            },
+            {
+              "label": "No",
+              "score": 1,
+              "actionGuidance": "As this use case will not leverage LIME / SHAP techniques to gain limited local explainability, this model is not prioritizing explainability. This is expected in certain circumstances (e.g., internal-facing automation use cases, rules-based systems, use cases with a large degree of human involvement such as human-in-the-loop, certain advertising or customer segmentation applications, capital markets, and more). In addition, this answer is also expected in circumstances where LIME / SHAP is not compatible with the tool or technique that is being leveraged for the use case. Model developers should note that adding LIME / SHAP to their use case (if compatible) will still assist our internal stakeholders in understanding the way in which this use case makes decisions or recommendations."
+            },
+            {
+              "label": "Not Applicable",
+              "score": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vendor",
+      "name": "Vendor",
+      "icon": "\ud83c\udfe2",
+      "description": "A data vendor is an organization or business that provides data for use or consumption. The questions in this dimension are used to assess use case / model reliance on third parties for data, system development, deployment, maintenance, etc. The questions are used to ensure that these third parties are held to the same ethical / responsible data standards we hold ourselves to as a Bank. Similarly, to the Safe / Secure dimension, these are not meant to replace TPRM involvement / assessments (e.g., IRQ / DDQ process).",
+      "questions": [
+        {
+          "id": "q1",
+          "text": "Will external data (e.g. purchased, public, etc.) be used for the design, development, or deployment of this use case?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 2,
+              "actionGuidance": "As this use case will be leveraging 3rd party data, model development teams must (wherever possible) assess the reliability (i.e., record), usability (i.e., volume of data manipulation required), and (real-time) retrievability of the source data and its implication on the implementation of the solution. Consider that there are limitations on the type and amount of data that is shared with a third party and how it is transmitted between Scotiabank and the 3rd party. Consult with your Model Owner, Third Party Risk Management, or the Data Ethics Office to understand the limitations of use and rights to the data when dealing with a 3rd party.",
+              "examples": [
+                "A web scraping tool that leverages a public API to collect pricing information",
+                "Purchased data from external vendors (Kaggle, Google Trends, government sites, etc.)",
+                "Publicly available information (e.g. StatsCan, Census Data)"
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0
+            }
+          ]
+        },
+        {
+          "id": "q2",
+          "text": "Are the components of the use case proprietary to the vendor?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 5,
+              "actionGuidance": "Although the AI/ML use case is proprietary to a vendor, our organization is still required to perform a robust analysis of its fit-for-use and performance. This performance testing will focus on how the use case works for our organization's data and will rely on input-output testing. Because there are components that are proprietary to the vendor, Scotiabank is still required to perform a robust analysis of its fit-for-use and performance. Model developers should focus their testing efforts on input-output testing (given the lack of understanding of the proprietary vendor components). Model developers must also understand the limitations of the proprietary vendor components. Please consult with the Third Party Risk Management team for further information (and to determine whether an IRQ / DDQ is required)."
+            },
+            {
+              "label": "No",
+              "score": 0
+            }
+          ]
+        },
+        {
+          "id": "q3",
+          "text": "Will external parties be involved in the running / development of this use case (e.g. API calls)?",
+          "type": "single_choice",
+          "options": [
+            {
+              "label": "Yes",
+              "score": 3,
+              "actionGuidance": "As external parties will be involved in the development or running of this use case, there may be risks to the longevity of the use case (e.g., if the third party API or vendor ceases operations, etc.) which will result in operational issues with the use case in the future. For further information, please consult with Scotiabank's Third Party Risk Management team or the Data Ethics Office to determine whether an IRQ / DDQ is required.",
+              "examples": [
+                "Public financial data e.g.: Bloomberg",
+                "External vendor manpower, e.g.: Deloitte"
+              ]
+            },
+            {
+              "label": "No",
+              "score": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scoring": {
+    "method": "sum_per_dimension",
+    "notes": [
+      "Each dimension score = sum of all scored answers within that dimension.",
+      "Text-only questions (score: null) do not contribute to scoring.",
+      "For multi_choice questions, the highest score among selected options is used.",
+      "For multi_sub questions, each sub-question's selected option score is summed.",
+      "Raw scores are converted to Low/Medium/High using the thresholds below.",
+      "Scores are hidden from users during the assessment; shown only in results."
+    ],
+    "thresholds": {
+      "acceptable_use": {
+        "low_below": 4,
+        "high_at_or_above": 6
+      },
+      "fair_impartial": {
+        "low_below": 4,
+        "high_at_or_above": 9
+      },
+      "transparent_explainable": {
+        "low_below": 10,
+        "high_at_or_above": 15
+      },
+      "robust_reliable": {
+        "low_below": 4,
+        "high_at_or_above": 9
+      },
+      "safe_secure": {
+        "low_below": 5,
+        "high_at_or_above": 8
+      },
+      "vendor": {
+        "low_below": 5,
+        "high_at_or_above": 8
+      }
+    },
+    "overall_action_indicator": {
+      "description": "Based on the six Ethical Dimensions, an Action Indicator Score for the overall use case / model is determined, which ultimately drives the approval and escalation requirements for each model assessment.",
+      "dimension_groups": {
+        "group_A_higher_weight": [
+          "acceptable_use",
+          "fair_impartial",
+          "transparent_explainable"
+        ],
+        "group_B_lower_weight": [
+          "robust_reliable",
+          "safe_secure",
+          "vendor"
+        ]
+      },
+      "high_conditions": [
+        "Any single dimension from Group A is High",
+        "Any two dimensions from Group B are High",
+        "Any two dimensions from Group A are Medium",
+        "All three dimensions from Group B are Medium"
+      ],
+      "low_conditions": [
+        "All dimensions are Low",
+        "Only one dimension is Medium and the rest are Low",
+        "Only Vendor is High and everything else is Low"
+      ],
+      "medium_conditions": [
+        "All other scenarios"
+      ]
+    },
+    "thresholds_explanation": "For each dimension: score < low_below = Low, score >= high_at_or_above = High, everything in between = Medium."
+  },
+  "config": {
+    "format": "multi_step_wizard",
+    "save_progress": true,
+    "output": {
+      "spider_chart": true,
+      "pdf_export": true,
+      "show_raw_scores": true,
+      "show_dimension_levels": true,
+      "show_overall_indicator": true,
+      "spider_chart_mode": "levels",
+      "spider_chart_mode_description": "Chart plots Low=0, Medium=1, High=2 per dimension (not raw scores). Axis labels show Low/Medium/High. This ensures dimensions are comparable regardless of their different raw score ranges."
+    },
+    "dimension_colors": {
+      "acceptable_use": "#e67e22",
+      "fair_impartial": "#c43e2a",
+      "robust_reliable": "#2a7ec4",
+      "safe_secure": "#2aad6e",
+      "transparent_explainable": "#c4a02a",
+      "vendor": "#8b2ac4"
+    }
+  },
+  "question_types_reference": {
+    "single_choice": "User picks exactly one option. Each option has a label, score, and optional actionGuidance + examples.",
+    "multi_choice": "User can pick multiple options. The highest score among selected is used for the dimension total.",
+    "multi_sub": "Contains subQuestions array. Each sub-question is independently answered (single_choice). All sub-scores are summed.",
+    "text": "Free text input. No score contribution (score: null). Used for qualitative context.",
+    "conditional_fields": {
+      "conditionalOn": "Set on a question to make it appear only when a condition is met. Values like 'q1_yes' mean show only if q1 answer is 'Yes'. Value 'q1' on a multi_sub means only show sub-questions whose matching q1 sub was 'Yes'."
+    }
+  }
+};
+
+// ============================================================
+// STATE
+// ============================================================
+const STORAGE_KEY = 'ethics_assessment_v2';
+let state = {
+  screen: 'welcome', // welcome | assessment | results
+  currentDimension: 0,
+  answers: {}
+};
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.answers && Object.keys(parsed.answers).length > 0) {
+        return parsed;
+      }
+    }
+  } catch(e) {}
+  return null;
+}
+
+function clearState() {
+  localStorage.removeItem(STORAGE_KEY);
+  state = { screen: 'welcome', currentDimension: 0, answers: {} };
+  render();
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal(title, guidance, examples) {
+  document.getElementById('modal-title').textContent = title;
+  let html = '<p>' + guidance + '</p>';
+  if (examples && examples.length > 0) {
+    html += '<div style="margin-top:16px"><strong>Examples / Guiding Questions:</strong><ul>';
+    examples.forEach(ex => { html += '<li>' + ex + '</li>'; });
+    html += '</ul></div>';
+  }
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal').classList.add('visible');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('visible');
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ============================================================
+// SCORING
+// ============================================================
+function calculateDimensionScore(dimId) {
+  const dim = DATA.dimensions.find(d => d.id === dimId);
+  if (!dim) return 0;
+  let total = 0;
+
+  dim.questions.forEach(q => {
+    if (q.type === 'text') return; // no score
+    if (q.type === 'multi_sub') {
+      (q.subQuestions || []).forEach(sq => {
+        const key = dimId + '.' + q.id + '.' + sq.id;
+        const ans = state.answers[key];
+        if (ans !== undefined) {
+          const opt = sq.options.find(o => o.label === ans);
+          if (opt && opt.score !== undefined && opt.score !== null) {
+            total += opt.score;
+          }
+        }
+      });
+    } else if (q.type === 'single_choice') {
+      const key = dimId + '.' + q.id;
+      const ans = state.answers[key];
+      if (ans !== undefined) {
+        const opt = q.options.find(o => o.label === ans);
+        if (opt && opt.score !== undefined && opt.score !== null) {
+          total += opt.score;
+        }
+      }
+    } else if (q.type === 'multi_choice') {
+      const key = dimId + '.' + q.id;
+      const ans = state.answers[key]; // array of labels
+      if (ans && Array.isArray(ans)) {
+        // Take the highest score among selected options
+        let maxScore = 0;
+        ans.forEach(label => {
+          const opt = q.options.find(o => o.label === label);
+          if (opt && opt.score !== undefined && opt.score !== null && opt.score > maxScore) {
+            maxScore = opt.score;
+          }
+        });
+        total += maxScore;
+      }
+    }
+  });
+
+  return total;
+}
+
+// ============================================================
+// SCORING THRESHOLDS & OVERALL ACTION INDICATOR
+// All values read from DATA.scoring at runtime
+// ============================================================
+
+function getDimensionLevel(dimId) {
+  const raw = calculateDimensionScore(dimId);
+  const t = DATA.scoring.thresholds[dimId];
+  if (!t) return 'low';
+  if (raw < t.low_below) return 'low';
+  if (raw >= t.high_at_or_above) return 'high';
+  return 'medium';
+}
+
+function getOverallLevel() {
+  const levels = {};
+  DATA.dimensions.forEach(d => {
+    levels[d.id] = getDimensionLevel(d.id);
+  });
+
+  const allIds = DATA.dimensions.map(d => d.id);
+  const groups = DATA.scoring.overall_action_indicator.dimension_groups;
+  const groupAIds = allIds.filter(id => groups.group_A_higher_weight.includes(id));
+  const groupBIds = allIds.filter(id => groups.group_B_lower_weight.includes(id));
+
+  // Count levels
+  const countLevel = (ids, level) => ids.filter(id => levels[id] === level).length;
+
+  // HIGH conditions:
+  if (countLevel(groupAIds, 'high') >= 1) return 'high';
+  if (countLevel(groupBIds, 'high') >= 2) return 'high';
+  if (countLevel(groupAIds, 'medium') >= 2) return 'high';
+  if (countLevel(groupBIds, 'medium') >= 3) return 'high';
+
+  // LOW conditions:
+  if (countLevel(allIds, 'low') === allIds.length) return 'low';
+  if (countLevel(allIds, 'medium') === 1 && countLevel(allIds, 'low') === allIds.length - 1) return 'low';
+  if (levels.vendor === 'high' && countLevel(allIds.filter(id => id !== 'vendor'), 'low') === allIds.length - 1) return 'low';
+
+  // MEDIUM: all other scenarios
+  return 'medium';
+}
+
+function levelColor(level) {
+  if (level === 'high') return '#e74c3c';
+  if (level === 'medium') return '#f39c12';
+  return '#27ae60';
+}
+
+function levelLabel(level) {
+  return level.charAt(0).toUpperCase() + level.slice(1);
+}
+
+function getDimColors() {
+  // Read colors from data file, with fallback defaults
+  const defaults = ['#e67e22', '#c43e2a', '#2a7ec4', '#2aad6e', '#c4a02a', '#8b2ac4'];
+  if (!DATA || !DATA.config || !DATA.config.dimension_colors) return defaults;
+  return DATA.dimensions.map((d, i) => DATA.config.dimension_colors[d.id] || defaults[i] || '#888');
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  const app = document.getElementById('app');
+  if (state.screen === 'welcome') {
+    renderWelcome(app);
+  } else if (state.screen === 'assessment') {
+    renderAssessment(app);
+  } else if (state.screen === 'results') {
+    renderResults(app);
+    requestAnimationFrame(() => {
+      setTimeout(renderChart, 50);
+    });
+  }
+  saveState();
+}
+
+function renderWelcome(app) {
+  const hasSaved = loadState();
+  let html = '<div class="welcome-screen">';
+  html += '<h2>Welcome</h2>';
+  html += '<p>This tool will guide you through an ethical assessment of your AI/ML use case across six key dimensions. Each dimension explores different aspects of responsible AI development.</p>';
+  html += '<div class="welcome-dimensions">';
+  DATA.dimensions.forEach(d => {
+    html += '<div class="welcome-dim"><div class="wd-icon">' + d.icon + '</div><div class="wd-name">' + d.name + '</div></div>';
+  });
+  html += '</div>';
+  html += '<button class="start-btn" onclick="startAssessment(false)">Begin Assessment</button>';
+  if (hasSaved) {
+    html += '<div class="resume-notice">You have a saved assessment in progress. <button onclick="startAssessment(true)" style="background:none;border:none;color:#2e7d32;font-weight:700;cursor:pointer;text-decoration:underline;font-family:inherit;font-size:inherit;">Resume where you left off</button></div>';
+  }
+  html += '</div>';
+  app.innerHTML = html;
+}
+
+function startAssessment(resume) {
+  if (resume) {
+    const saved = loadState();
+    if (saved) {
+      state = saved;
+      state.screen = 'assessment';
+    }
+  } else {
+    state = { screen: 'assessment', currentDimension: 0, answers: {} };
+  }
+  render();
+  window.scrollTo(0, 0);
+}
+
+function renderAssessment(app) {
+  const dim = DATA.dimensions[state.currentDimension];
+  const dimColors = getDimColors();
+  const color = dimColors[state.currentDimension] || 'var(--accent)';
+
+  let html = '';
+
+  // Progress bar
+  html += '<div class="progress-bar">';
+  DATA.dimensions.forEach((d, i) => {
+    const cls = i === state.currentDimension ? 'active' : (i < state.currentDimension ? 'completed' : '');
+    html += '<div class="progress-step ' + cls + '" onclick="goToDimension(' + i + ')">';
+    html += '<div class="bar" style="background:' + (cls ? dimColors[i] : '') + '"></div>';
+    html += '<div class="step-label">' + d.icon + ' ' + d.name + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Dimension intro
+  html += '<div class="dimension-intro" style="border-left-color:' + color + '">';
+  html += '<div class="dim-icon">' + dim.icon + '</div>';
+  html += '<h2>' + dim.name + '</h2>';
+  html += '<p>' + dim.description + '</p>';
+  html += '</div>';
+
+  // Questions
+  dim.questions.forEach((q, qi) => {
+    // Check conditional visibility
+    if (q.conditionalOn) {
+      if (q.conditionalOn === 'q1') {
+        // Show Q2 sub-questions only for attributes selected "Yes" in Q1
+        // We handle this inside the multi_sub renderer
+      } else if (q.conditionalOn === 'q5_yes') {
+        const q5key = dim.id + '.q5';
+        if (state.answers[q5key] !== 'Yes') return;
+      } else if (q.conditionalOn === 'q1_yes') {
+        const q1key = dim.id + '.q1';
+        if (state.answers[q1key] !== 'Yes') return;
+      }
+    }
+
+    html += '<div class="question-card">';
+    html += '<div class="question-number" style="color:' + color + '">Question ' + (qi + 1) + '</div>';
+    html += '<div class="question-text">' + q.text + '</div>';
+
+    if (q.type === 'text') {
+      const key = dim.id + '.' + q.id;
+      const val = state.answers[key] || '';
+      html += '<textarea class="text-input" placeholder="Type your answer here..." onchange="setAnswer(\'' + key + '\', this.value)">' + escHtml(val) + '</textarea>';
+      if (q.examples && q.examples.length > 0) {
+        html += '<div class="examples-section"><strong>Example: </strong>' + q.examples[0] + '</div>';
+      }
+    } else if (q.type === 'single_choice') {
+      html += renderOptions(q.options, dim.id + '.' + q.id);
+      if (q.examples && q.examples.length > 0) {
+        html += '<div class="examples-section"><strong>Examples: </strong>' + q.examples.join(', ') + '</div>';
+      }
+    } else if (q.type === 'multi_choice') {
+      html += '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;font-style:italic;">Select all that apply</div>';
+      html += renderMultiOptions(q.options, dim.id + '.' + q.id);
+    } else if (q.type === 'multi_sub') {
+      html += '<div class="sub-question-group">';
+      (q.subQuestions || []).forEach(sq => {
+        // For Q2 conditional on Q1: only show if Q1 sub was "Yes"
+        if (q.conditionalOn === 'q1') {
+          const q1key = dim.id + '.q1.' + sq.id.replace('q2', 'q1');
+          if (state.answers[q1key] !== 'Yes') return;
+        }
+        html += '<div class="sub-question">';
+        html += '<div class="sub-question-label">' + sq.label + '</div>';
+        html += renderOptions(sq.options, dim.id + '.' + q.id + '.' + sq.id);
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    html += '</div>';
+  });
+
+  // Navigation
+  html += '<div class="nav-bar">';
+  html += '<button class="nav-btn" onclick="prevDimension()" ' + (state.currentDimension === 0 ? 'disabled' : '') + '>← Previous</button>';
+  html += '<div class="save-indicator">Progress saved automatically</div>';
+  if (state.currentDimension < DATA.dimensions.length - 1) {
+    html += '<button class="nav-btn primary" onclick="nextDimension()">Next →</button>';
+  } else {
+    html += '<button class="nav-btn primary" onclick="showResults()">View Results →</button>';
+  }
+  html += '</div>';
+
+  app.innerHTML = html;
+}
+
+function renderOptions(options, key) {
+  const current = state.answers[key];
+  let html = '<div class="options-group">';
+  options.forEach(opt => {
+    const sel = current === opt.label ? 'selected' : '';
+    const hasHelp = opt.actionGuidance || (opt.examples && opt.examples.length > 0);
+    html += '<button class="option-btn ' + sel + '" onclick="setAnswer(\'' + key + '\', \'' + escAttr(opt.label) + '\')">';
+    html += opt.label;
+    if (hasHelp) {
+      html += '<span class="help-icon" onclick="event.stopPropagation();showGuidance(\'' + escAttr(opt.label) + '\',\'' + key + '\')">?</span>';
+    }
+    html += '</button>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderMultiOptions(options, key) {
+  const current = state.answers[key] || [];
+  let html = '<div class="options-group" style="flex-wrap:wrap">';
+  options.forEach(opt => {
+    const sel = Array.isArray(current) && current.includes(opt.label) ? 'selected' : '';
+    const hasHelp = opt.actionGuidance || (opt.examples && opt.examples.length > 0);
+    html += '<button class="option-btn ' + sel + '" onclick="toggleMultiAnswer(\'' + key + '\', \'' + escAttr(opt.label) + '\')">';
+    html += opt.label;
+    if (hasHelp) {
+      html += '<span class="help-icon" onclick="event.stopPropagation();showGuidance(\'' + escAttr(opt.label) + '\',\'' + key + '\')">?</span>';
+    }
+    html += '</button>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function toggleMultiAnswer(key, value) {
+  if (!state.answers[key] || !Array.isArray(state.answers[key])) {
+    state.answers[key] = [];
+  }
+  const idx = state.answers[key].indexOf(value);
+  if (idx >= 0) {
+    state.answers[key].splice(idx, 1);
+  } else {
+    state.answers[key].push(value);
+  }
+  render();
+}
+
+function showGuidance(optLabel, key) {
+  // Find the option across all data
+  let guidance = '';
+  let examples = [];
+  let found = false;
+
+  DATA.dimensions.forEach(dim => {
+    dim.questions.forEach(q => {
+      if ((q.type === 'single_choice' || q.type === 'multi_choice') && q.options) {
+        if (key === dim.id + '.' + q.id) {
+          const opt = q.options.find(o => o.label === optLabel);
+          if (opt) {
+            guidance = opt.actionGuidance || '';
+            examples = opt.examples || [];
+            found = true;
+          }
+        }
+      }
+      if (q.type === 'multi_sub' && q.subQuestions) {
+        q.subQuestions.forEach(sq => {
+          if (key === dim.id + '.' + q.id + '.' + sq.id) {
+            const opt = sq.options.find(o => o.label === optLabel);
+            if (opt) {
+              guidance = opt.actionGuidance || '';
+              examples = opt.examples || [];
+              found = true;
+            }
+          }
+        });
+      }
+    });
+  });
+
+  if (found && (guidance || examples.length)) {
+    openModal('Action Guidance: ' + optLabel, guidance, examples);
+  }
+}
+
+function setAnswer(key, value) {
+  state.answers[key] = value;
+  render();
+}
+
+function goToDimension(i) {
+  if (i <= state.currentDimension + 1) {
+    state.currentDimension = i;
+    render();
+    window.scrollTo(0, 0);
+  }
+}
+
+function prevDimension() {
+  if (state.currentDimension > 0) {
+    state.currentDimension--;
+    render();
+    window.scrollTo(0, 0);
+  }
+}
+
+function nextDimension() {
+  if (state.currentDimension < DATA.dimensions.length - 1) {
+    state.currentDimension++;
+    render();
+    window.scrollTo(0, 0);
+  }
+}
+
+function showResults() {
+  state.screen = 'results';
+  render();
+  window.scrollTo(0, 0);
+  // Wait for DOM, then render chart
+  requestAnimationFrame(() => {
+    setTimeout(renderChart, 50);
+  });
+}
+
+// ============================================================
+// RESULTS + CHART
+// ============================================================
+let chartInstance = null;
+
+function renderResults(app) {
+  const dimColors = getDimColors();
+  const scores = DATA.dimensions.map(d => calculateDimensionScore(d.id));
+  const overall = getOverallLevel();
+
+  let html = '<div class="results-section">';
+  html += '<h2>Assessment Results</h2>';
+
+  // Overall Action Indicator
+  html += '<div style="text-align:center;margin-bottom:28px;padding:24px;border-radius:12px;background:' + levelColor(overall) + '15;border:2px solid ' + levelColor(overall) + '">';
+  html += '<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:' + levelColor(overall) + ';margin-bottom:4px">Overall Action Indicator</div>';
+  html += '<div style="font-family:Fraunces,serif;font-size:36px;font-weight:800;color:' + levelColor(overall) + '">' + levelLabel(overall).toUpperCase() + '</div>';
+  html += '<div style="font-size:13px;color:var(--text-muted);margin-top:6px">';
+  if (overall === 'high') html += 'This use case requires escalation and enhanced approval requirements.';
+  else if (overall === 'medium') html += 'This use case requires standard review and monitoring.';
+  else html += 'This use case has lower ethical risk. Standard processes apply.';
+  html += '</div></div>';
+
+  html += '<div class="chart-container"><canvas id="spiderChart"></canvas></div>';
+  html += '<div class="score-breakdown">';
+  DATA.dimensions.forEach((d, i) => {
+    const lvl = getDimensionLevel(d.id);
+    html += '<div class="score-card" style="border-color:' + dimColors[i] + '">';
+    html += '<div class="sc-label" style="color:' + dimColors[i] + '">' + d.icon + ' ' + d.name + '</div>';
+    html += '<div style="display:flex;align-items:baseline;gap:12px">';
+    html += '<div class="sc-value">' + scores[i] + '</div>';
+    html += '<span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:' + levelColor(lvl) + '20;color:' + levelColor(lvl) + '">' + levelLabel(lvl) + '</span>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+  html += '<button class="download-btn" onclick="downloadPDF()">📥 Download PDF Report</button>';
+  html += '<button class="nav-btn" style="width:100%;margin-top:12px" onclick="state.screen=\'assessment\';render();window.scrollTo(0,0)">← Back to Assessment</button>';
+  html += '<button class="reset-btn" onclick="if(confirm(\'Clear all answers and start over?\')){clearState();}">Reset Assessment</button>';
+  html += '</div>';
+  app.innerHTML = html;
+}
+
+function renderChart() {
+  const canvas = document.getElementById('spiderChart');
+  if (!canvas) return;
+
+  // Destroy existing chart instance if any
+  if (chartInstance) {
+    chartInstance.destroy();
+    chartInstance = null;
+  }
+
+  const dimColors = getDimColors();
+  const labels = DATA.dimensions.map(d => {
+    // Split long names into two lines using ' / ' as a natural break
+    if (d.name.includes(' / ')) return d.name.split(' / ').map(s => s.trim());
+    return d.name;
+  });
+  const levelNames = [];
+  const levelValues = DATA.dimensions.map(d => {
+    const lvl = getDimensionLevel(d.id);
+    const raw = calculateDimensionScore(d.id);
+    levelNames.push(levelLabel(lvl) + ' (score: ' + raw + ')');
+    return lvl === 'high' ? 3 : lvl === 'medium' ? 2 : 1;
+  });
+
+  try {
+    chartInstance = new Chart(canvas, {
+      type: 'radar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Risk Level',
+          data: levelValues,
+          backgroundColor: 'rgba(196, 62, 42, 0.15)',
+          borderColor: '#c43e2a',
+          borderWidth: 2.5,
+          pointBackgroundColor: dimColors,
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 7
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            beginAtZero: true,
+            min: 0,
+            max: 3,
+            ticks: {
+              stepSize: 1,
+              font: { family: 'DM Sans', size: 11 },
+              backdropColor: 'transparent',
+              callback: function(value) {
+                if (value === 1) return 'Low';
+                if (value === 2) return 'Medium';
+                if (value === 3) return 'High';
+                return '';
+              }
+            },
+            pointLabels: {
+              font: { family: 'DM Sans', size: 13, weight: '600' }
+            },
+            grid: { color: 'rgba(0,0,0,0.08)' },
+            angleLines: { color: 'rgba(0,0,0,0.08)' }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: function(items) {
+                return items[0].label;
+              },
+              label: function(context) {
+                return levelNames[context.dataIndex];
+              }
+            }
+          }
+        }
+      }
+    });
+  } catch(e) {
+    console.error('Chart rendering error:', e);
+  }
+}
+
+// ============================================================
+// PDF EXPORT
+// ============================================================
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const scores = DATA.dimensions.map(d => calculateDimensionScore(d.id));
+  const overall = getOverallLevel();
+  const pageW = doc.internal.pageSize.getWidth();
+  const margin = 20;
+  const contentW = pageW - margin * 2;
+
+  // --- Header ---
+  doc.setFillColor(26, 26, 26);
+  doc.rect(0, 0, pageW, 38, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.setFont(undefined, 'bold');
+  doc.text('AI Ethics Assistant', margin, 18);
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.text('Assessment Report', margin, 26);
+  doc.text('Generated: ' + new Date().toLocaleDateString(), margin, 33);
+  doc.setTextColor(0, 0, 0);
+
+  // --- Overall Action Indicator ---
+  let y = 50;
+  const oc = overall === 'high' ? [231, 76, 60] : overall === 'medium' ? [243, 156, 18] : [39, 174, 96];
+  doc.setFillColor(oc[0], oc[1], oc[2]);
+  doc.roundedRect(margin, y, contentW, 16, 3, 3, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(13);
+  doc.setFont(undefined, 'bold');
+  doc.text('Overall Action Indicator:  ' + levelLabel(overall).toUpperCase(), margin + 6, y + 10.5);
+  doc.setTextColor(0, 0, 0);
+
+  // --- Dimension Scores Table ---
+  y += 26;
+  doc.setFontSize(13);
+  doc.setFont(undefined, 'bold');
+  doc.text('Dimension Scores', margin, y);
+  y += 8;
+
+  // Table header
+  doc.setFillColor(240, 240, 240);
+  doc.rect(margin, y, contentW, 8, 'F');
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'bold');
+  doc.text('Dimension', margin + 4, y + 5.5);
+  doc.text('Raw Score', margin + 110, y + 5.5);
+  doc.text('Level', margin + 140, y + 5.5);
+  y += 8;
+
+  doc.setFont(undefined, 'normal');
+  doc.setFontSize(10);
+  DATA.dimensions.forEach((d, i) => {
+    const lvl = getDimensionLevel(d.id);
+    const lc = lvl === 'high' ? [231, 76, 60] : lvl === 'medium' ? [243, 156, 18] : [39, 174, 96];
+
+    // Alternating row background
+    if (i % 2 === 0) {
+      doc.setFillColor(248, 248, 248);
+      doc.rect(margin, y, contentW, 7, 'F');
+    }
+    doc.text(d.name, margin + 4, y + 5);
+    doc.text(String(scores[i]), margin + 115, y + 5);
+    // Level badge
+    doc.setFillColor(lc[0], lc[1], lc[2]);
+    doc.roundedRect(margin + 138, y + 0.5, 22, 6, 1.5, 1.5, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(7);
+    doc.setFont(undefined, 'bold');
+    doc.text(levelLabel(lvl), margin + 142, y + 4.8);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    y += 7;
+  });
+
+  // --- Detailed Answers ---
+  y += 10;
+  DATA.dimensions.forEach((dim, di) => {
+    // Dimension header
+    if (y > 250) { doc.addPage(); y = 20; }
+    doc.setFillColor(240, 236, 230);
+    doc.rect(margin, y, contentW, 9, 'F');
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text((di + 1) + '.  ' + dim.name, margin + 4, y + 6.5);
+    y += 13;
+
+    dim.questions.forEach((q, qi) => {
+      if (y > 260) { doc.addPage(); y = 20; }
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(100, 100, 100);
+      doc.text('Q' + (qi + 1), margin + 2, y);
+      doc.setTextColor(0, 0, 0);
+      const qLines = doc.splitTextToSize(q.text, contentW - 14);
+      doc.text(qLines, margin + 12, y);
+      y += qLines.length * 4.5 + 2;
+
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(9);
+
+      if (q.type === 'text') {
+        const key = dim.id + '.' + q.id;
+        const val = state.answers[key] || '(No answer)';
+        doc.setTextColor(60, 60, 60);
+        const lines = doc.splitTextToSize(val, contentW - 20);
+        doc.text(lines, margin + 14, y);
+        y += lines.length * 4.2 + 4;
+        doc.setTextColor(0, 0, 0);
+      } else if (q.type === 'single_choice') {
+        const key = dim.id + '.' + q.id;
+        const val = state.answers[key] || '(No answer)';
+        doc.setTextColor(60, 60, 60);
+        doc.text(val, margin + 14, y);
+        y += 6;
+        doc.setTextColor(0, 0, 0);
+      } else if (q.type === 'multi_choice') {
+        const key = dim.id + '.' + q.id;
+        const val = state.answers[key];
+        const display = Array.isArray(val) && val.length > 0 ? val.join(', ') : '(No answer)';
+        doc.setTextColor(60, 60, 60);
+        const lines = doc.splitTextToSize(display, contentW - 20);
+        doc.text(lines, margin + 14, y);
+        y += lines.length * 4.2 + 4;
+        doc.setTextColor(0, 0, 0);
+      } else if (q.type === 'multi_sub') {
+        (q.subQuestions || []).forEach(sq => {
+          if (y > 270) { doc.addPage(); y = 20; }
+          const sqKey = dim.id + '.' + q.id + '.' + sq.id;
+          const val = state.answers[sqKey] || '(No answer)';
+          doc.setFont(undefined, 'bold');
+          doc.setFontSize(8);
+          doc.text(sq.label + ':', margin + 14, y);
+          doc.setFont(undefined, 'normal');
+          doc.setTextColor(60, 60, 60);
+          doc.text(val, margin + 14 + doc.getTextWidth(sq.label + ':  '), y);
+          doc.setTextColor(0, 0, 0);
+          doc.setFontSize(9);
+          y += 5;
+        });
+        y += 2;
+      }
+    });
+
+    // Separator line between dimensions
+    doc.setDrawColor(220, 220, 220);
+    doc.line(margin, y, pageW - margin, y);
+    y += 6;
+  });
+
+  // --- Footer on last page ---
+  doc.setFontSize(7);
+  doc.setTextColor(160, 160, 160);
+  doc.text('AI Ethics Assistant - Confidential', margin, doc.internal.pageSize.getHeight() - 10);
+  doc.setTextColor(0, 0, 0);
+
+  doc.save('ethics_assessment_report.pdf');
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function escHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function escAttr(s) {
+  return String(s).replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+// ============================================================
+// INIT - Load the data inline
+// ============================================================
+</script>
+<script>
+// Initialize
+render();
+</script>
+</body>
+</html>
