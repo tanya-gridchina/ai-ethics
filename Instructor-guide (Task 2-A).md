@@ -1,4 +1,4 @@
-# Task 2, Track A: Instructor Guideline
+# Instructor Guideline (Task 2, Track A)
 
 ## Teaching and Monitoring the Session
 
@@ -6,12 +6,12 @@
 
 ### Overview
 
-In this task, students modify a working prototype of the AI Ethics Assistant using a generative AI coding assistant. The pedagogical goal is not to teach coding — it is to force students to engage with the **design decisions embedded in a governance tool** by making them change those decisions and observe the consequences.
+In this task, students modify a working prototype of the AI Ethics Assistant using a generative AI coding assistant. The pedagogical goal is not to teach coding but to force students to engage with the **design decisions embedded in a governance tool** by making them change those decisions and observe the consequences.
 
 When a student decides to change a score from 3 to 5, they must articulate *why* the current weight is wrong and *what governance outcome* the new weight produces. When they add a question, they must define what risk it captures and how it interacts with the existing scoring logic. The tool becomes a medium for governance reasoning, not an end in itself.
 
 **Expected session duration:** 75–120 minutes (can be split across two sessions)
-**Class size:** Works for 15–60 students, individually or in teams of 2–3
+**Class size:** 15–60 students, individually or in teams of 2–3
 **Prerequisites:** Students should have read the case and used the tool at least once before this session
 
 ---
@@ -53,16 +53,6 @@ When a student decides to change a score from 3 to 5, they must articulate *why*
 - They use Claude, ChatGPT, or another tool to modify the HTML file
 - Circulate actively — this is where most support is needed
 
-**Common issues and responses:**
-
-| Issue | Response |
-|-------|----------|
-| "The LLM gave me broken code" | Ask them to paste the error message back to the LLM and say "this didn't work, here's the error." Iterating is part of the process. |
-| "I don't know what to change" | Point them back to the AMCA flags. Ask: "Which of these six flags would your change help catch?" |
-| "My change is too small" | A single well-designed question with calibrated scoring and thoughtful guidance is a perfectly valid submission. Depth over breadth. |
-| "My change is too ambitious and I'm stuck" | Help them scope down. "What's the smallest version of your idea that still demonstrates the governance insight?" |
-| "The scoring doesn't work the way I expected" | This is a learning moment. Ask them to trace through the logic: "What score does your new question produce? How does that change the dimension level? Does the overall indicator change?" |
-
 **What to watch for:**
 - Students who change scores arbitrarily without governance reasoning — ask them to justify every number
 - Students who add questions that duplicate existing ones — ask what new risk their question captures
@@ -78,9 +68,9 @@ When a student decides to change a score from 3 to 5, they must articulate *why*
 - If a modification doesn't change the outcomes as intended, that's worth discussing — why not? What does that reveal about the scoring architecture?
 - Students begin their 400-word reflection (can be completed after class)
 
-#### Phase 5: Debrief (15–20 minutes, optional but recommended)
+#### Phase 5: Debrief (15–20 minutes, optional)
 
-**Objective:** Surface insights about governance tool design through student presentations.
+**Objective:** Reveal insights about governance tool design through student presentations.
 
 - Ask 3–4 teams to present their modification in 2–3 minutes each: what they changed, why, and what they learned
 - Facilitate discussion around recurring themes:
@@ -106,31 +96,6 @@ When a student decides to change a score from 3 to 5, they must articulate *why*
 
 ---
 
-### Frequently Asked Questions
-
-**Q: What if students work in teams of different technical levels?**
-Pair a technically stronger student with a governance-focused student. The technical student handles the LLM interaction; the governance student drives the design decisions. Both contribute to the reflection.
-
-**Q: How do I handle a class where some students have no technical background at all?**
-Emphasize that the prompt template allows them to describe changes in plain English. For students who are truly stuck, suggest they focus on data-only changes: editing question text, adjusting scores, adding action guidance. These are JSON edits that require no code understanding.
-
-**Q: What if a student's modification breaks the tool?**
-This is fine — it's part of the learning process. Ask them to describe what they intended, what went wrong, and what they think happened. The reflection can address a partially successful modification honestly. Iteration with the LLM is encouraged.
-
-**Q: Can students collaborate on the same modification?**
-Teams of 2–3 are recommended. Larger groups tend to dilute individual engagement. Each team submits one modified file and one joint reflection.
-
-**Q: What if all the modifications look the same?**
-This rarely happens in practice — the solution space is very large. If it does, examine whether the task framing is too narrow. Consider adding a constraint: "Your modification must address a governance gap that no other team in this room is addressing."
-
-**Q: Should I give students the AMCA answers pre-filled in the tool?**
-No. Having them fill out the assessment themselves (even quickly) builds familiarity with the tool's logic and question flow. It also surfaces their own interpretation of the use case, which may differ from the case's — a useful discussion point.
-
-**Q: How long should the reflection be?**
-Approximately 400 words (roughly one page, single-spaced). The length matters less than the quality of reasoning. A 300-word reflection with genuine insight is stronger than a 500-word summary that restates the obvious.
-
----
-
 ### Pre-Session Checklist
 
 - [ ] Students have read the full case including Appendices B and C
@@ -148,4 +113,4 @@ Approximately 400 words (roughly one page, single-spaced). The length matters le
 2. `assessment_data.js` — Standalone data file for LLM prompt workflows
 3. `PROMPT_TEMPLATE.md` — Ready-to-use prompts for data changes, UI changes, or both
 4. `STUDENT_GUIDE.md` — Technical reference for editing
-5. `TASK2_TRACK_A_PARTICIPANT_HANDOUT.md` — This task's instructions, deliverables, and evaluation criteria
+5. `Student Instructions (Task 2-A).md` — This task's instructions, deliverables, and evaluation criteria
