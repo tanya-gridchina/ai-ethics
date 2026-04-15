@@ -1,10 +1,8 @@
 # Task 2, Track A: Modify the Ethics Assistant
 
-## Participant Handout
+## Student Instructions
 
 ---
-
-### Your Mission
 
 You have access to a working prototype of Scotiabank's AI Ethics Assistant — the same governance tool described in the case. Your task is to **modify the tool** to address one or more of the governance gaps identified in the case, or to improve the tool in a direction you believe makes it more effective.
 
@@ -27,7 +25,7 @@ Start by **using the tool yourself** — complete an assessment for a hypothetic
 
 ### Types of Changes You Can Make
 
-Here are some directions to consider. You may combine several, or pursue a direction not listed here. The strongest submissions make a clear connection between a governance problem identified in the case and a concrete modification to the tool.
+Here are some directions to consider. You may combine several, or pursue a direction not listed here. The strongest submissions make a clear connection between a governance problem identified in the case and a particular modification to the tool.
 
 **Scoring & Weighting**
 - Adjust how dimension scores are calculated or how thresholds map to Low/Medium/High
@@ -35,7 +33,7 @@ Here are some directions to consider. You may combine several, or pursue a direc
 - Address the case's core tension: a "Low" score coexisting with unresolved governance flags
 
 **Questions & Dimensions**
-- Add new questions to capture risks the current tool misses (e.g., GenAI-specific risks, data provenance, deployment context)
+- Add new questions to capture risks the current tool misses (e.g., GenAI-specific risks)
 - Add an entirely new seventh dimension
 - Revise existing questions to reduce the self-reporting vulnerability highlighted in the AMCA case
 
@@ -45,7 +43,7 @@ Here are some directions to consider. You may combine several, or pursue a direc
 - Redesign how results are communicated (beyond a single score)
 
 **GenAI Integration**
-- Incorporate generative AI features into the tool itself (e.g., an AI assistant that helps users answer questions, flags potential inconsistencies, or generates a narrative risk summary)
+- Incorporate generative AI features into the tool itself (an AI assistant that helps users answer questions, flags potential inconsistencies, or generates a narrative risk summary) 
 - Note: this is more technically ambitious and would involve API calls
 
 **Structural Changes**
@@ -57,7 +55,7 @@ Here are some directions to consider. You may combine several, or pursue a direc
 
 ### How to Make Changes
 
-#### Level 1: Data-Only Changes (Recommended Starting Point)
+#### Level 1: Data-Only Changes 
 Edit the data section directly in the HTML file, or use the prompt template to ask an LLM:
 
 > *Example: "Add a new question to the Acceptable Use dimension: 'Does this use case generate content that could be mistaken for human-produced output?' with Yes scoring 4 and No scoring 0, and add action guidance explaining the risks of synthetic content in financial communications."*
@@ -88,7 +86,7 @@ Submit **two items**:
 
 ### Evaluation Criteria
 
-Your work will be assessed on:
+Your work will be evaluated on:
 
 | Criterion | What We're Looking For |
 |-----------|----------------------|
