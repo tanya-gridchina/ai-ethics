@@ -2,7 +2,7 @@
 
 ## Pedagogical Aim
 
-Track A puts the Ethics Assistant prototype in students' hands and asks them to modify it using a generative AI coding assistant. The aim is **not** to teach coding. It is to force students to engage with the design decisions embedded in a governance tool by making them change those decisions and observe the consequences.
+Track A puts the Ethics Assistant prototype in students' hands and asks them to modify it using a generative AI coding assistant. The aim is not to teach coding. It is to force students to engage with the design decisions embedded in a governance tool by making them change those decisions and observe the consequences.
 
 When a student decides to change a score from 3 to 5, they must articulate why the current weight is wrong and what governance outcome the new weight produces. When they add a question, they must define what risk it captures and how it interacts with existing scoring logic. The tool becomes a medium for governance reasoning, not an end in itself. The LLM handles the syntax; the student owns the design decision.
 
@@ -18,13 +18,13 @@ When a student decides to change a score from 3 to 5, they must articulate why t
 ### Phase 1 · Orientation (15 min)
 - Live demo: open `ethics_assessment.html`, walk through one dimension, show the radar chart and PDF export.
 - Live demo: make one trivial change with the prompt template — e.g., reword a question — and reload to show the before/after. This demystifies the workflow and signals that the task is accessible.
-- Reinforce: **the quality of the governance reasoning matters more than the technical sophistication of the change.**
-- Common early question — *"Do I need to know how to code?"* Answer: no. The prompt template is plain English. The LLM generates the code. The student decides what to change and why.
+- Reinforce: the quality of the governance reasoning matters more than the technical sophistication of the change.
+- Common early question — *"Do I need to know how to code?"* Answer: no. The LLM generates the code. The student decides what to change and why.
 
 ### Phase 2 · Planning (15–20 min)
 - Ask students to re-read the six unresolved AMCA flags (Appendix C) and identify which ones the current tool fails to surface.
 - Each student or team writes a 2–3 sentence change proposal: what they will modify and what governance gap it addresses.
-- Circulate. Redirect students whose proposal is too vague ("make it better") or too ambitious ("rebuild everything"). The strongest proposals tend to focus on:
+- The strongest proposals tend to focus on:
   1. The disconnect between a Low overall score and unresolved flags.
   2. The self-reporting vulnerability illustrated by the human-oversight mischaracterisation.
   3. Missing coverage for generative AI, data provenance, or deployment context.
@@ -41,12 +41,12 @@ When a student decides to change a score from 3 to 5, they must articulate why t
 ### Phase 4 · Test and Reflect (15–20 min)
 - Each student completes a full assessment with their modified tool. They should test at least two scenarios — one expected to score Low and one expected to score High — and verify the modification produces the intended effect.
 - If a modification doesn't change outcomes as intended, that is worth surfacing in the reflection. Why didn't it? What does that reveal about the scoring architecture?
-- Students begin the 400-word reflection (often completed after class).
+- Students begin the 400-word reflection (completed after class).
 
 ### Phase 5 · Debrief (15–20 min, optional)
 - Ask 3–4 teams to present their modification (2–3 min each): what they changed, why, what they learned.
 - Facilitate around recurring themes:
-  - Did increased rigour reduce usability? (The rigour-usability trade-off.)
+  - Did increased rigour reduce usability? (The rigour-usability trade-off)
   - Did anyone's change inadvertently create a new gap? (Unintended consequences in governance design.)
   - Did the process of assigning scores and thresholds reveal anything about how "risk" is quantified?
 
