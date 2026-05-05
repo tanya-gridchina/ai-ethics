@@ -2,32 +2,21 @@
 
 ## What This Task Asks
 
-You have access to a working prototype of Scotiabank's AI Ethics Assistant — the same governance tool described in the case. Your task is to **modify the tool** to address one or more of the limitations or governance gaps you identified in your Task 1 critique.
+You have access to a working prototype of Scotiabank's AI Ethics Assistant, the governance tool described in the case. Your task is to modify the tool to address one or more of the limitations or governance gaps you identified in your Task 1 critique.
 
-You will use a generative AI coding assistant (Claude, ChatGPT, GitHub Copilot, or comparable) to make the changes. **You are not expected to write code from scratch.** The goal is to translate a governance design insight into a working change in the tool — not to demonstrate technical sophistication.
-
----
-
-## What You Receive
-
-| File | What It Is |
-|------|-----------|
-| `ethics_assessment.html` | The complete working prototype. Open it in any modern browser. |
-| This file | Your instructions, the modification workflow, and a prompt template. |
-
-The HTML file is fully self-contained — code and assessment data live in the same file. No installation, no server, no separate data file.
+You will use a generative AI coding assistant (Claude, ChatGPT, GitHub Copilot, or comparable) to make the changes. You are not expected to write code from scratch. The goal is to translate a governance design insight into a working change in the tool; we don't expect you to demonstrate technical sophistication.
 
 ---
 
 ## Suggested Workflow
 
-**1. Try the tool first.** Open `ethics_assessment.html` in a browser and complete an assessment for a hypothetical AI use case. Notice which questions feel inadequate, which scoring outcomes seem misaligned with the actual ethical risk, and which design decisions appear in the code.
+**1. Open the tool first.** Open `ethics_assessment.html` in a browser and complete an assessment for a hypothetical AI use case. Notice which questions feel inadequate, which scoring outcomes seem misaligned with the actual ethical risk, and which design decisions appear in the code.
 
 **2. Decide what to change, and why.** Before opening the LLM, write 2–3 sentences naming the governance gap you intend to address and the modification you'll make. The strongest submissions connect a specific case finding (e.g., the AMCA Low score sitting alongside six unresolved flags, the human-in-the-loop mischaracterisation, the absence of generative-AI vocabulary) to a specific change in the tool.
 
-**3. Make the change with an LLM.** Open Claude (or ChatGPT, etc.). Upload `ethics_assessment.html` to the chat. Use the prompt template below. Save the file the LLM returns.
+**3. Make the change with an LLM.** Open an LLM of your choice. Upload `ethics_assessment.html` to the chat. Use the prompt template below. Save the file that the LLM returns.
 
-**4. Test it.** Open the modified HTML in your browser. Complete an assessment. Confirm the change behaves as intended. If it doesn't, iterate with the LLM until it does.
+**4. Test it.** Open the modified HTML in your browser. Complete an assessment. Confirm the change behaves as intended. If it doesn't, iterate with the LLM.
 
 **5. Write your reflection.** ~400 words covering the questions in the Deliverable section.
 
@@ -100,7 +89,7 @@ Technical sophistication is welcome but not required. A thoughtfully designed ne
 
 ## Tips
 
-- **Try to break the tool first.** Find a scenario where the current scoring produces a misleading result — that is where your modification should focus.
+- **Try to break the tool first.** Find a scenario where the current scoring produces a misleading result - that is where your modification should focus.
 - **Re-read the AMCA appendix.** The six unresolved flags are a roadmap of concrete governance gaps the current tool fails to surface.
 - **Think about who fills out the form.** The submitter is a model developer in a business unit, not an ethics specialist. Your modification should help that person reach a more accurate characterisation, not require them to already be one.
 - **Keep your modification narrow.** A single well-executed change beats a sprawling rewrite. The reflection is where you demonstrate breadth.
