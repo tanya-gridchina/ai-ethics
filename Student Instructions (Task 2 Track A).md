@@ -12,7 +12,7 @@ You will use a generative AI coding assistant (Claude, ChatGPT, GitHub Copilot, 
 
 **1. Open the tool first.** Open `ethics_assessment.html` in a browser and complete an assessment for a hypothetical AI use case. Notice which questions feel inadequate, which scoring outcomes seem misaligned with the actual ethical risk, and which design decisions appear in the code.
 
-**2. Decide what to change, and why.** Before opening the LLM, write 2–3 sentences naming the governance gap you intend to address and the modification you'll make. The strongest submissions connect a specific case finding (e.g., the AMCA Low score sitting alongside six unresolved flags, the human-in-the-loop mischaracterisation, the absence of generative-AI vocabulary) to a specific change in the tool.
+**2. Decide what to change, and why.** Before opening the LLM, write 2–3 sentences naming the governance gap you intend to address and the modification you'll make. The strongest submissions connect a specific case finding (e.g., the AMCA Low score sitting alongside six unresolved flags, the human-in-the-loop mischaracterization, the absence of generative-AI vocabulary) to a specific change in the tool.
 
 **3. Make the change with an LLM.** Open an LLM of your choice. Upload `ethics_assessment.html` to the chat. Use the prompt template below. Save the file that the LLM returns.
 
@@ -27,7 +27,7 @@ You will use a generative AI coding assistant (Claude, ChatGPT, GitHub Copilot, 
 The case identifies several governance gaps you might address. You may combine several or pursue a direction not listed here. The strongest submissions make a clear connection between a problem identified in the case and a particular modification to the tool.
 
 - **Scoring & weighting.** Adjust how dimension scores are computed, how thresholds map to Low/Medium/High, or how the Overall Action Indicator combines dimensions. Address the case's central tension: a "Low" overall score coexisting with material unresolved flags.
-- **Questions & dimensions.** Add questions that capture risks the current tool misses — generative AI, data provenance, deployment context, affected communities. Add a seventh dimension if the existing six cannot host the new content. Revise existing questions to reduce the self-reporting vulnerability.
+- **Questions & dimensions.** Add questions that capture risks the current tool misses - generative AI, data provenance, deployment context, affected communities. Add a seventh dimension if the existing six cannot host the new content. Revise existing questions to reduce the self-reporting vulnerability.
 - **User experience & guidance.** Change how action guidance is shown, make it harder to bypass, add contextual warnings when answer combinations suggest elevated risk, or redesign how results are communicated beyond a single score.
 - **Structural changes.** Add a review step before submission. Create different paths for traditional ML vs. generative AI. Add fields for organisational context (deployment scale, affected population, regulatory environment).
 
@@ -67,9 +67,9 @@ Submit two items:
 1. **Your modified `ethics_assessment.html`.** It must open in a browser and produce a complete assessment.
 
 2. **A reflection of approximately 400 words** addressing:
-   - What you changed and why — connect the modification to a specific governance gap or finding from the case.
-   - What the change accomplishes in governance terms — how does it make the tool more effective at identifying, measuring, or communicating ethical risk?
-   - What your experience using the AI coding assistant revealed — what the tool handled well, what required correction or iteration.
+   - What you changed and why: connect the modification to a specific governance gap or finding from the case.
+   - What the change accomplishes in governance terms: how does it make the tool more effective at identifying, measuring, or communicating ethical risk?
+   - What your experience using the AI coding assistant revealed: what the tool handled well, what required correction or iteration.
    - What the process suggested about the relationship between tool design and governance intent.
 
 ---
