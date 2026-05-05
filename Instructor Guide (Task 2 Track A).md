@@ -7,8 +7,8 @@ Track A puts the Ethics Assistant prototype in students' hands and asks them to 
 When a student decides to change a score from 3 to 5, they must articulate why the current weight is wrong and what governance outcome the new weight produces. When they add a question, they must define what risk it captures and how it interacts with existing scoring logic. The tool becomes a medium for governance reasoning, not an end in itself. The LLM handles the syntax; the student owns the design decision.
 
 **Recommended for:** courses where students have, or are developing, experience with AI-assisted software development.
-**Session length:** 75–120 minutes (can be split across two sessions).
-**Class size:** 15–60 students; individually or in teams of 2–3.
+**Session length:** 75-120 minutes (can be split across two sessions).
+**Class size:** 15-60 students; individually or in teams of 2–3.
 **Prerequisites:** Students must have read the case (especially Appendices B and C) and completed Task 1.
 
 ---
@@ -17,33 +17,33 @@ When a student decides to change a score from 3 to 5, they must articulate why t
 
 ### Phase 1 · Orientation (15 min)
 - Live demo: open `ethics_assessment.html`, walk through one dimension, show the radar chart and PDF export.
-- Live demo: make one trivial change with the prompt template — e.g., reword a question — and reload to show the before/after. This demystifies the workflow and signals that the task is accessible.
+- Live demo: make one trivial change with the prompt template, e.g., reword a question and reload to show the before/after. This demystifies the workflow and signals that the task is accessible.
 - Reinforce: the quality of the governance reasoning matters more than the technical sophistication of the change.
-- Common early question — *"Do I need to know how to code?"* Answer: no. The LLM generates the code. The student decides what to change and why.
+- Common early question *"Do I need to know how to code?"* Answer: no. The LLM generates the code. The student decides what to change and why.
 
-### Phase 2 · Planning (15–20 min)
-- Ask students to re-read the six unresolved AMCA flags (Appendix C) and identify which ones the current tool fails to surface.
-- Each student or team writes a 2–3 sentence change proposal: what they will modify and what governance gap it addresses.
+### Phase 2 · Planning (15-20 min)
+- Ask students to reread the six unresolved AMCA flags (Appendix C) and identify which ones the current tool fails to surface.
+- Each student or team writes a 2-3 sentence change proposal: what they will modify and what governance gap it addresses.
 - The strongest proposals tend to focus on:
   1. The disconnect between a Low overall score and unresolved flags.
-  2. The self-reporting vulnerability illustrated by the human-oversight mischaracterisation.
+  2. The self-reporting vulnerability illustrated by the human-oversight mischaracterization.
   3. Missing coverage for generative AI, data provenance, or deployment context.
-  4. How results are communicated — what a score means versus what users assume it means.
+  4. How results are communicated; what a score means versus what users assume it means.
 
-### Phase 3 · Implementation (30–50 min)
-- Students work individually or in teams of 2–3 with their LLM of choice.
+### Phase 3 · Implementation (30-50 min)
+- Students work individually or in teams of 2-3 with their LLM of choice.
 - Circulate actively. Watch for and correct:
-  - Students who change scores arbitrarily without governance justification — ask them to defend every number.
-  - Students who add questions that duplicate existing ones — ask what new risk theirs captures.
-  - Students who focus on UI or aesthetics — redirect to governance substance.
-  - Students who get stuck with the LLM — pair them with a more confident peer.
+  - Students who change scores arbitrarily without governance justification - ask them to defend every number.
+  - Students who add questions that duplicate existing ones - ask what new risk theirs captures.
+  - Students who focus on UI or aesthetics - redirect to governance substance.
+  - Students who get stuck with the LLM - pair them with a more confident peer.
 
-### Phase 4 · Test and Reflect (15–20 min)
-- Each student completes a full assessment with their modified tool. They should test at least two scenarios — one expected to score Low and one expected to score High — and verify the modification produces the intended effect.
+### Phase 4 · Test and Reflect (15-20 min)
+- Each student completes a full assessment with their modified tool. They should test at least two scenarios (one expected to score Low and one expected to score High) and verify the modification produces the intended effect.
 - If a modification doesn't change outcomes as intended, that is worth surfacing in the reflection. Why didn't it? What does that reveal about the scoring architecture?
 - Students begin the 400-word reflection (completed after class).
 
-### Phase 5 · Debrief (15–20 min, optional)
+### Phase 5 · Debrief (15-20 min, optional)
 - Ask 3–4 teams to present their modification (2–3 min each): what they changed, why, what they learned.
 - Facilitate around recurring themes:
   - Did increased rigour reduce usability? (The rigour-usability trade-off)
