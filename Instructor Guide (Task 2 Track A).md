@@ -1,6 +1,6 @@
 # Instructor Guide · Task 2 · Track A
 
-## Pedagogical Aim
+## Overview
 
 Track A puts the Ethics Assistant prototype in students' hands and asks them to modify it using a generative AI coding assistant. The aim is not to teach coding. It is to force students to engage with the design decisions embedded in a governance tool by making them change those decisions and observe the consequences.
 
